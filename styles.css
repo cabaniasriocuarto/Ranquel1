@@ -232,12 +232,12 @@ a:focus, button:focus {
   left: 0;
   width: 100%;
   height: 100%;
-  background-image: url('./images/Portada.png');
+  background-image: url('./images/Portada.jpg');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
   opacity: 0.7; /* 70% de opacidad */
-  filter: blur(2px) brightness(0.8);
+  filter: blur(2px) brightness(0.7);
   z-index: -1;
 }
 
