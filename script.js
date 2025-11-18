@@ -233,3 +233,281 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   
 });
+// === Chatbot Ranquel Tech Lab ===
+(function () {
+  const CALENDAR_LINK = "https://calendar.app.google/Gan912bCwXFqymKUA";
+  const WHATSAPP_OWNER = "5493584118722";
+  const EMAIL_OWNER = "waltervaldivieso@gmail.com";
+
+  let state = {
+    step: "intro",
+    name: "",
+    email: "",
+    phone: "",
+    projectType: "",
+    pages: 1,
+    description: "",
+    estimate: null,
+  };
+
+  function calcEstimate(projectType, pages) {
+    const n = Number.isFinite(pages) && pages > 0 ? pages : 1;
+
+    if (projectType === "web-simple") {
+      const base = 750000;
+      const extraPages = Math.max(0, n - 2);
+      const total = base + extraPages * 80000;
+      return { min: total, max: Math.round(total * 1.15), currency: "ARS" };
+    }
+
+    if (projectType === "web-payments") {
+      const base = 1350000;
+      const extraPages = Math.max(0, n - 1);
+      const total = base + extraPages * 150000;
+      return { min: total, max: Math.round(total * 1.2), currency: "ARS" };
+    }
+
+    if (projectType === "web-app") {
+      const base = 2000000;
+      return { min: base, max: Math.round(base * 1.5), currency: "ARS" };
+    }
+
+    return { min: 1000000, max: 2000000, currency: "ARS" };
+  }
+
+  function render() {
+    const container = document.getElementById("chatbot-panel-inner");
+    if (!container) return;
+
+    const s = state;
+
+    if (s.step === "intro") {
+      container.innerHTML = `
+        <div>
+          <p><strong>Hola 👋</strong></p>
+          <p>Soy el asistente de <strong>Ranquel Tech Lab</strong>.</p>
+          <p class="chatbot-badge">Te ayudo a calcular un presupuesto y agendar una reunión.</p>
+          <button id="cb-start" class="chatbot-btn-primary">Empezar 👉</button>
+        </div>
+      `;
+      document.getElementById("cb-start").onclick = () => {
+        state.step = "contact";
+        render();
+      };
+      return;
+    }
+
+    if (s.step === "contact") {
+      container.innerHTML = `
+        <div>
+          <p>Primero, dejame tus datos de contacto:</p>
+          <input id="cb-name" class="chatbot-input" placeholder="Nombre y apellido" value="${s.name}">
+          <input id="cb-email" class="chatbot-input" placeholder="Email" type="email" value="${s.email}">
+          <input id="cb-phone" class="chatbot-input" placeholder="Teléfono / WhatsApp" value="${s.phone}">
+          <button id="cb-next-project" class="chatbot-btn-primary">Continuar con el proyecto →</button>
+          <button id="cb-back-intro" class="chatbot-btn-link">Volver</button>
+        </div>
+      `;
+
+      document.getElementById("cb-name").oninput = (e) =>
+        (state.name = e.target.value);
+      document.getElementById("cb-email").oninput = (e) =>
+        (state.email = e.target.value);
+      document.getElementById("cb-phone").oninput = (e) =>
+        (state.phone = e.target.value);
+
+      document.getElementById("cb-next-project").onclick = () => {
+        if (
+          !state.name.trim() ||
+          !state.email.trim() ||
+          state.phone.trim().length < 6
+        ) {
+          alert("Completá nombre, email y teléfono para seguir 😊");
+          return;
+        }
+        state.step = "project";
+        render();
+      };
+
+      document.getElementById("cb-back-intro").onclick = () => {
+        state.step = "intro";
+        render();
+      };
+      return;
+    }
+
+    if (s.step === "project") {
+      container.innerHTML = `
+        <div>
+          <p>Contame qué necesitás. Con esto calculo un <strong>presupuesto aproximado</strong>.</p>
+
+          <select id="cb-project-type" class="chatbot-select">
+            <option value="">Tipo de proyecto</option>
+            <option value="web-simple" ${s.projectType === "web-simple" ? "selected" : ""}>
+              Web simple (1–2 páginas, sin pagos)
+            </option>
+            <option value="web-payments" ${s.projectType === "web-payments" ? "selected" : ""}>
+              Web con pagos / e-commerce
+            </option>
+            <option value="web-app" ${s.projectType === "web-app" ? "selected" : ""}>
+              Aplicación web / sistema a medida
+            </option>
+            <option value="otro" ${s.projectType === "otro" ? "selected" : ""}>
+              Otro / no estoy seguro
+            </option>
+          </select>
+
+          <input id="cb-pages" class="chatbot-input" type="number" min="1"
+            placeholder="Cantidad aproximada de páginas / secciones"
+            value="${s.pages}">
+
+          <textarea id="cb-description" class="chatbot-textarea"
+            placeholder="Ej: Necesito una web para mi empresa, con 4 secciones, formulario y conexión con WhatsApp.">
+${s.description}</textarea>
+
+          <button id="cb-see-estimate" class="chatbot-btn-primary">Ver presupuesto aproximado</button>
+          <button id="cb-back-contact" class="chatbot-btn-link">Volver</button>
+        </div>
+      `;
+
+      document.getElementById("cb-project-type").onchange = (e) =>
+        (state.projectType = e.target.value);
+      document.getElementById("cb-pages").oninput = (e) =>
+        (state.pages = parseInt(e.target.value || "1", 10) || 1);
+      document.getElementById("cb-description").oninput = (e) =>
+        (state.description = e.target.value);
+
+      document.getElementById("cb-see-estimate").onclick = () => {
+        if (!state.description.trim()) {
+          alert("Escribí una breve descripción del proyecto 😉");
+          return;
+        }
+        state.estimate = calcEstimate(state.projectType, state.pages);
+        state.step = "estimate";
+        render();
+      };
+
+      document.getElementById("cb-back-contact").onclick = () => {
+        state.step = "contact";
+        render();
+      };
+      return;
+    }
+
+    if (s.step === "estimate" && s.estimate) {
+      const est = s.estimate;
+
+      const whatsappText =
+        `Nuevo lead Ranquel Tech Lab:\n` +
+        `Nombre: ${s.name}\n` +
+        `Email: ${s.email}\n` +
+        `Teléfono: ${s.phone}\n` +
+        `Tipo: ${s.projectType}\n` +
+        `Páginas: ${s.pages}\n\n` +
+        `Descripción:\n${s.description}\n\n` +
+        `Presupuesto aprox: ${est.min} - ${est.max} ${est.currency}`;
+      const whatsappOwnerUrl = `https://wa.me/${WHATSAPP_OWNER}?text=${encodeURIComponent(
+        whatsappText
+      )}`;
+
+      const whatsappClientText =
+        `Hola, soy ${s.name} y quiero avanzar con un proyecto (${s.projectType ||
+        "web/app"}) para mi empresa. Vengo desde la web de Ranquel Tech Lab.`;
+      const whatsappClientUrl = `https://wa.me/${WHATSAPP_OWNER}?text=${encodeURIComponent(
+        whatsappClientText
+      )}`;
+
+      const emailSubject = `Consulta web/app - ${s.name}`;
+      const emailBody =
+        `Nombre: ${s.name}\nEmail: ${s.email}\nTeléfono: ${s.phone}\n\n` +
+        `Tipo de proyecto: ${s.projectType}\nPáginas: ${s.pages}\n\n` +
+        `Descripción:\n${s.description}\n\n` +
+        `Presupuesto aprox: ${est.min} - ${est.max} ${est.currency}`;
+      const mailtoUrl = `mailto:${EMAIL_OWNER}?subject=${encodeURIComponent(
+        emailSubject
+      )}&body=${encodeURIComponent(emailBody)}`;
+
+      container.innerHTML = `
+        <div>
+          <p>En base a lo que me contaste, un proyecto así suele estar entre:</p>
+          <p><strong>${est.min.toLocaleString("es-AR")} – ${est.max.toLocaleString(
+        "es-AR"
+      )} ${est.currency}</strong></p>
+
+          <p class="chatbot-badge">
+            Datos aproximados y orientativos: cada proyecto se cotiza aparte y hay que analizarlo.
+          </p>
+
+          <ul style="margin-top:6px; margin-bottom:6px; padding-left:16px;">
+            <li>Web simple: $750.000 (1–2 páginas) + $80.000 por página extra.</li>
+            <li>Con pagos / e-commerce: $1.350.000 + $150.000 por página.</li>
+            <li>Aplicaciones web: desde $2.000.000 en adelante.</li>
+          </ul>
+
+          <p class="chatbot-badge">Recibo cuotas por Mercado Pago 💳.</p>
+
+          <p style="margin-top:8px; font-weight:600;">Próximo paso 👇</p>
+
+          <a href="${CALENDAR_LINK}" target="_blank" class="chatbot-btn-primary" style="display:block; text-align:center; margin-top:6px;">
+            Agendar reunión en Google Calendar
+          </a>
+
+          <a href="${whatsappClientUrl}" target="_blank" class="chatbot-btn-primary" style="display:block; text-align:center; margin-top:6px; background:#22c55e;">
+            Hablar ahora por WhatsApp
+          </a>
+
+          <a href="${mailtoUrl}" class="chatbot-btn-primary" style="display:block; text-align:center; margin-top:6px; background:#0ea5e9;">
+            Enviar datos por email
+          </a>
+
+          <a href="${whatsappOwnerUrl}" target="_blank" class="chatbot-btn-link">
+            (Solo para mí) Enviarme este lead a mi WhatsApp
+          </a>
+
+          <button id="cb-close" class="chatbot-btn-link">Cerrar</button>
+        </div>
+      `;
+
+      document.getElementById("cb-close").onclick = () => {
+        state.step = "done";
+        render();
+      };
+      return;
+    }
+
+    if (s.step === "done") {
+      container.innerHTML = `
+        <div>
+          <p>¡Gracias! 🙌</p>
+          <p>Recibí tus datos. Te voy a responder lo antes posible con un presupuesto más detallado.</p>
+          <button id="cb-again" class="chatbot-btn-link">Empezar de nuevo</button>
+        </div>
+      `;
+      document.getElementById("cb-again").onclick = () => {
+        state = { step: "intro", name: "", email: "", phone: "", projectType: "", pages: 1, description: "", estimate: null };
+        render();
+      };
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", function () {
+    const container = document.getElementById("chatbot-container");
+    if (!container) return;
+
+    container.innerHTML = `
+      <button id="chatbot-toggle" class="chatbot-toggle">💬 Chat Ranquel Tech Lab</button>
+      <div id="chatbot-panel" class="chatbot-panel chatbot-hidden">
+        <div id="chatbot-panel-inner"></div>
+      </div>
+    `;
+
+    const toggle = document.getElementById("chatbot-toggle");
+    const panel = document.getElementById("chatbot-panel");
+
+    toggle.onclick = function () {
+      panel.classList.toggle("chatbot-hidden");
+      render();
+    };
+  });
+})();
+
