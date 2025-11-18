@@ -266,10 +266,12 @@ a:focus, button:focus {
 }
 
 #hero h1 {
-  font-size: clamp(32px, 6vw, 56px);
+  font-size: clamp(32px, 5vw, 48px);
   font-weight: 800;
   letter-spacing: .2px;
   margin-top: 12px;
+  max-width: 780px;
+  line-height: 1.15;
 }
 
 #hero .hero-subtitle {
