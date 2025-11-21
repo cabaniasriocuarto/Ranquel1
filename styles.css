@@ -552,8 +552,8 @@ img {
 
 .chatbot-panel {
   margin-top: 8px;
-  width: 320px;
-  max-height: 480px;
+  width: min(360px, 92vw);
+  max-height: min(75vh, 540px);
   background: rgba(15, 23, 42, 0.96);
   color: #e5e7eb;
   border-radius: 16px;
@@ -562,6 +562,13 @@ img {
   backdrop-filter: blur(12px);
   font-size: 12px;
   overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+@media (max-width: 640px), (max-height: 600px) {
+  .chatbot-panel {
+    max-height: calc(100vh - 110px);
+  }
 }
 
 .chatbot-hidden {
