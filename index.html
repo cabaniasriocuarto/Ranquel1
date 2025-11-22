@@ -28,23 +28,30 @@
   <header id="header" class="backdrop">
     <nav class="wrap">
       <a href="#" class="logo neon" data-nav="inicio">Ranquel Tech Lab</a>
-      <button id="menuToggle" class="btn btn-ghost" aria-label="Abrir menú" aria-expanded="false">
+      <div class="nav-actions">
+        <label class="visually-hidden" for="langSelector">Selector de idioma</label>
+        <select id="langSelector" class="lang-select">
+          <option value="es" selected>ES</option>
+          <option value="en">EN</option>
+        </select>
+        <button id="menuToggle" class="btn btn-ghost" aria-label="Abrir menú" aria-expanded="false">
         <svg id="menuIcon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M3 6h18"/>
           <path d="M3 12h18"/>
           <path d="M3 18h18"/>
         </svg>
-      </button>
+        </button>
+      </div>
     </nav>
     <div id="mobileMenu" class="mobile-menu" style="display: none;">
       <ul class="wrap">
-        <li><a href="#" class="panel" data-nav="inicio">Inicio</a></li>
-        <li><a href="#about" class="panel" data-anchor="about">Sobre</a></li>
-        <li><a href="#services" class="panel" data-anchor="services">Servicios</a></li>
-        <li><a href="#ia" class="panel" data-anchor="ia">IA aplicada</a></li>
-        <li><a href="#marketing" class="panel" data-anchor="marketing">Marketing</a></li>
-        <li><a href="#metodo" class="panel" data-anchor="metodo">Método</a></li>
-        <li><a href="#" class="panel" data-nav="opciones">Opciones de Desarrollo</a></li>
+        <li><a href="#" class="panel" data-nav="inicio" data-i18n="nav.home">Inicio</a></li>
+        <li><a href="#about" class="panel" data-anchor="about" data-i18n="nav.about">Sobre</a></li>
+        <li><a href="#services" class="panel" data-anchor="services" data-i18n="nav.services">Servicios</a></li>
+        <li><a href="#ia" class="panel" data-anchor="ia" data-i18n="nav.ai">IA aplicada</a></li>
+        <li><a href="#marketing" class="panel" data-anchor="marketing" data-i18n="nav.marketing">Marketing</a></li>
+        <li><a href="#metodo" class="panel" data-anchor="metodo" data-i18n="nav.method">Método</a></li>
+        <li><a href="#" class="panel" data-nav="opciones" data-i18n="nav.options">Opciones de Desarrollo</a></li>
       </ul>
     </div>
   </header>
@@ -61,27 +68,27 @@
         <div class="wrap">
           <div class="hero-content">
             <div class="hero-text">
-              <span class="badge" data-reveal>En la cúspide de la tecnología</span>
-              <h1 class="neon" data-reveal>Creamos software inteligente que<br>Impulsa tu negocio.</h1>
-              <p class="hero-subtitle" data-reveal>Desarrollo Web, Apps Android y Automatizaciones con IA. SEO, analítica y performance listos desde el día uno.</p>
+              <span class="badge" data-reveal data-i18n="hero.badge">En la cúspide de la tecnología</span>
+              <h1 class="neon" data-reveal data-i18n="hero.title">Creamos software inteligente que<br>Impulsa tu negocio.</h1>
+              <p class="hero-subtitle" data-reveal data-i18n="hero.subtitle">Desarrollo Web, Apps Android y Automatizaciones con IA. SEO, analítica y performance listos desde el día uno.</p>
               <div class="hero-buttons" data-reveal>
             <button id="btnChatbot" class="btn btn-ghost">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M4 4h16a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H9l-5 5V6a2 2 0 0 1 2-2Z"/>
               </svg>
-              Chatbot
+              <span data-i18n="hero.chatbot">Chatbot</span>
             </button>
-            <a href="https://wa.me/5493584123456" class="btn btn-accent glow">
+            <a href="https://wa.me/5493584118722" class="btn btn-accent glow">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M20.52 3.48A11.94 11.94 0 0 0 12.06 0C5.46 0 0.12 5.34 0.12 11.94c0 2.1.54 4.08 1.5 5.82L0 24l6.42-1.62c1.68.9 3.6 1.44 5.64 1.44 6.6 0 11.94-5.34 11.94-11.94 0-3.18-1.26-6.06-3.48-8.4ZM12.06 21.3c-1.86 0-3.6-.48-5.1-1.38l-.36-.24-3.78.96 1.02-3.66-.24-.36a9.6 9.6 0 0 1-1.5-5.04c0-5.34 4.38-9.72 9.72-9.72a9.7 9.7 0 0 1 6.9 2.88 9.7 9.7 0 0 1 2.82 6.84c0 5.34-4.38 9.72-9.72 9.72Zm5.58-7.26c-.3-.18-1.74-.9-2.01-1.02-.27-.12-.48-.18-.69.12-.21.3-.78 1.02-.96 1.23-.18.21-.36.24-.66.06-.3-.18-1.26-.45-2.4-1.5-.9-.81-1.5-1.8-1.68-2.1-.18-.3-.02-.48.16-.66.16-.16.3-.36.45-.54.15-.18.21-.3.3-.51.09-.21.03-.39-.03-.57-.06-.18-.69-1.65-.96-2.28-.24-.57-.48-.48-.69-.48h-.57c-.21 0-.57.09-.87.39-.3.3-1.14 1.11-1.14 2.7 0 1.59 1.17 3.12 1.35 3.33.18.21 2.31 3.51 5.61 4.83.78.33 1.38.51 1.86.66.78.24 1.5.21 2.07.12.63-.09 1.95-.78 2.22-1.53.27-.75.27-1.38.18-1.53-.09-.15-.27-.24-.57-.42Z"/>
               </svg>
-              WhatsApp
+              <span data-i18n="hero.whatsapp">WhatsApp</span>
             </a>
                           <button id="btnOpciones" class="btn btn-ghost">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M3 7h14v2H3V7Zm0 4h18v2H3v-2Zm0 4h10v2H3v-2Z"/>
               </svg>
-              Opciones de Desarrollo
+              <span data-i18n="hero.options">Opciones de Desarrollo</span>
             </button>
           </div>
             </div>
@@ -91,13 +98,13 @@
 
       <!-- About Section -->
       <section id="about" class="wrap section-padding">
-        <h2 class="section-title" data-reveal>Sobre nosotros</h2>
+        <h2 class="section-title" data-reveal data-i18n="about.title">Sobre nosotros</h2>
         <div class="about-grid">
           <div data-reveal>
-            <p>En Ranquel Tech Lab diseñamos y desarrollamos sitios web, apps Android y sistemas en Java integrados con IA. Unimos diseño, código y automatización para convertir ideas en productos reales, medibles y escalables.</p>
-            <p>Por que todo se puede <strong>Codificar</strong>, podemos diseñar el software a medida que necesites. Nos comentas donde está tu cuello de botella o tu necesidad de mejora, analizamos la situación y damos soluciones.</p>
+            <p data-i18n="about.p1">En Ranquel Tech Lab diseñamos y desarrollamos sitios web, apps Android y sistemas en Java integrados con IA. Unimos diseño, código y automatización para convertir ideas en productos reales, medibles y escalables.</p>
+            <p data-i18n="about.p2">Por que todo se puede <strong>Codificar</strong>, podemos diseñar el software a medida que necesites. Nos comentas donde está tu cuello de botella o tu necesidad de mejora, analizamos la situación y damos soluciones.</p>
             <div style="margin-top: 16px;">
-              <button class="btn btn-accent glow btn-opciones">Conocé Opciones de Desarrollo</button>
+              <button class="btn btn-accent glow btn-opciones" data-i18n="about.cta">Conocé Opciones de Desarrollo</button>
             </div>
           </div>
           <div class="thumb" data-reveal>
@@ -108,49 +115,49 @@
 
       <!-- Services Section -->
       <section id="services" class="wrap section-padding">
-        <h2 class="section-title" data-reveal>Servicios</h2>
+        <h2 class="section-title" data-reveal data-i18n="services.title">Servicios</h2>
         <div class="grid grid-3">
           <article class="panel glow" data-reveal>
             <div class="thumb">
               <img class="thumb-img" alt="Desarrollo Web" src="./images/Desarrollo-web.webp" loading="lazy">
             </div>
-            <h3>Desarrollo Web</h3>
-            <p>Resolvemos de posicionamiento web y marca, performance, e-commerce (tiendas digitales) y landings rápidas.</p>
+            <h3 data-i18n="services.web.title">Desarrollo Web</h3>
+            <p data-i18n="services.web.desc">Resolvemos de posicionamiento web y marca, performance, e-commerce (tiendas digitales) y landings rápidas.</p>
           </article>
           <article class="panel glow" data-reveal>
             <div class="thumb">
               <img class="thumb-img" alt="Dominios" src="./images/Dominios.webp" loading="lazy">
             </div>
-            <h3>Dominios</h3>
-            <p>Nos encargamos de tu hosting y el dominio que necesitás para tu página web.</p>
+            <h3 data-i18n="services.domains.title">Dominios</h3>
+            <p data-i18n="services.domains.desc">Nos encargamos de tu hosting y el dominio que necesitás para tu página web.</p>
           </article>
           <article class="panel glow" data-reveal>
             <div class="thumb">
               <img class="thumb-img" alt="Apps Android" src="./images/Apps-android.webp" loading="lazy">
             </div>
-            <h3>Apps Multi dispositivos</h3>
-            <p>Generamos Apps optimizadas para todos los dispositivos en Java/Kotlin, publicación en Play Store y App Store.</p>
+            <h3 data-i18n="services.apps.title">Apps Multi dispositivos</h3>
+            <p data-i18n="services.apps.desc">Generamos Apps optimizadas para todos los dispositivos en Java/Kotlin, publicación en Play Store y App Store.</p>
           </article>
           <article class="panel glow" data-reveal>
             <div class="thumb">
               <img class="thumb-img" alt="Sistemas a medida" src="./images/Sistemas-a-medida.webp" loading="lazy">
             </div>
-            <h3>Sistemas a medida</h3>
-            <p>Por que toda empresa es unica, generamos las soluciones a la altura de tu negocio o sistema, Java/Node.js, dashboards y microservicios y mucho más.</p>
+            <h3 data-i18n="services.systems.title">Sistemas a medida</h3>
+            <p data-i18n="services.systems.desc">Por que toda empresa es unica, generamos las soluciones a la altura de tu negocio o sistema, Java/Node.js, dashboards y microservicios y mucho más.</p>
           </article>
           <article class="panel glow" data-reveal>
             <div class="thumb">
               <img class="thumb-img" alt="SEO + Ads" src="./images/SEO-+-Ads.webp" loading="lazy">
             </div>
-            <h3>SEO + Ads</h3>
-            <p>PUblicitá en los principales buscadores y Apps del momento Google- Bing - Meta con medición y experimentos. Tu Web/App reconocible en el mundo.</p>
+            <h3 data-i18n="services.seo.title">SEO + Ads</h3>
+            <p data-i18n="services.seo.desc">PUblicitá en los principales buscadores y Apps del momento Google- Bing - Meta con medición y experimentos. Tu Web/App reconocible en el mundo.</p>
           </article>
           <article class="panel glow" data-reveal>
             <div class="thumb">
               <img class="thumb-img" alt="Analítica" src="./images/Analitica.webp" loading="lazy">
             </div>
-            <h3>Analítica</h3>
-            <p> Conectamos tu App/Web a todo el sistema web para reconocimiento de los entornos digitales como Google Analitycs, GTM, Search Console, Meta y Bing Webmaste, para obtener datos fidelignos y con esto poder tomar las mejores desiciones, tanto publicitarias como de ventas o exposición de tu marca.. .</p>
+            <h3 data-i18n="services.analytics.title">Analítica</h3>
+            <p data-i18n="services.analytics.desc"> Conectamos tu App/Web a todo el sistema web para reconocimiento de los entornos digitales como Google Analitycs, GTM, Search Console, Meta y Bing Webmaste, para obtener datos fidelignos y con esto poder tomar las mejores desiciones, tanto publicitarias como de ventas o exposición de tu marca.. .</p>
           </article>
         </div>
       </section>
@@ -158,41 +165,41 @@
       <!-- IA Aplicada Section -->
       <section id="ia" class="wrap section-padding">
         <div class="text-center">
-          <h2 class="neon section-title" data-reveal>IA aplicada</h2>
-          <p data-reveal>En Ranquel Tech Lab la IA no es un extra: es parte del producto. Te mostramos caminos concretos para llevarla a tus procesos hoy, con métricas claras y foco en ROI.</p>
+        <h2 class="neon section-title" data-reveal data-i18n="ia.title">IA aplicada</h2>
+          <p data-reveal data-i18n="ia.subtitle">En Ranquel Tech Lab la IA no es un extra: es parte del producto. Te mostramos caminos concretos para llevarla a tus procesos hoy, con métricas claras y foco en ROI.</p>
         </div>
         <div class="grid grid-3">
           <article class="panel glow" data-reveal>
             <div class="thumb">
               <img class="thumb-img" alt="Asesoramiento" src="./images/Asesoramiento.webp" loading="lazy">
             </div>
-            <h3>Asesoramiento</h3>
-            <p>Auditamos procesos y datos, medimos tu madurez digital y detectamos "quick wins". Entregamos un plan 30-60-90 días con casos de uso priorizados, costos, métricas y ROI estimado para acelerar resultados.</p>
+            <h3 data-i18n="ia.consulting.title">Asesoramiento</h3>
+            <p data-i18n="ia.consulting.desc">Auditamos procesos y datos, medimos tu madurez digital y detectamos "quick wins". Entregamos un plan 30-60-90 días con casos de uso priorizados, costos, métricas y ROI estimado para acelerar resultados.</p>
           </article>
           <article class="panel glow" data-reveal>
             <div class="thumb">
               <img class="thumb-img" alt="GPTs a medida" src="./images/GPTs-a-medida.webp" loading="lazy">
             </div>
-            <h3>GPTs a medida</h3>
-            <p>Creamos asistentes con el contexto de tu negocio (documentos, políticas, catálogos) y reglas propias. Se conectan a tus sistemas (ERP/CRM/AFIP/Sheets) para automatizar tareas, responder con trazabilidad y ejecutar flujos end-to-end.</p>
+            <h3 data-i18n="ia.gpts.title">GPTs a medida</h3>
+            <p data-i18n="ia.gpts.desc">Creamos asistentes con el contexto de tu negocio (documentos, políticas, catálogos) y reglas propias. Se conectan a tus sistemas (ERP/CRM/AFIP/Sheets) para automatizar tareas, responder con trazabilidad y ejecutar flujos end-to-end.</p>
           </article>
           <article class="panel glow" data-reveal>
             <div class="thumb">
               <img class="thumb-img" alt="Bots conversacionales" src="./images/Bots-conversacionales.webp" loading="lazy">
             </div>
-            <h3>Bots conversacionales</h3>
-            <p>Web/WhatsApp/Instagram que atienden, reservan, cobran y escalan a un humano cuando corresponde. Entrenados con tu contenido, con analytics de conversaciones y mejoras continuas para elevar la experiencia del cliente.</p>
+            <h3 data-i18n="ia.bots.title">Bots conversacionales</h3>
+            <p data-i18n="ia.bots.desc">Web/WhatsApp/Instagram que atienden, reservan, cobran y escalan a un humano cuando corresponde. Entrenados con tu contenido, con analytics de conversaciones y mejoras continuas para elevar la experiencia del cliente.</p>
           </article>
         </div>
         <div class="text-center" style="margin-top: 20px;">
-          <button class="btn btn-accent glow btn-opciones" data-reveal>Conocé Opciones de Desarrollo</button>
+          <button class="btn btn-accent glow btn-opciones" data-reveal data-i18n="ia.cta">Conocé Opciones de Desarrollo</button>
         </div>
       </section>
 
       <!-- Marketing Section -->
       <section id="marketing" class="wrap section-padding">
-        <h2 class="neon section-title text-center" data-reveal>Marketing</h2>
-        <p class="text-center marketing-subtitle" data-reveal>Con 13 años de experiencia en Marketing digital, hacemos que el dinero de tu inversión en publicidad digital rinda como Nunca Antes.</p>
+        <h2 class="neon section-title text-center" data-reveal data-i18n="marketing.title">Marketing</h2>
+        <p class="text-center marketing-subtitle" data-reveal data-i18n="marketing.subtitle">Con 13 años de experiencia en Marketing digital, hacemos que el dinero de tu inversión en publicidad digital rinda como Nunca Antes.</p>
         <div class="marketing-icons" data-reveal>
           <img src="./images/google.svg" alt="Google" class="marketing-icon" loading="lazy">
           <img src="./images/google-ads.svg" alt="Google Ads" class="marketing-icon" loading="lazy">
@@ -209,16 +216,16 @@
 
       <!-- Método Section -->
       <section id="metodo" class="wrap section-padding">
-        <h2 class="section-title text-center" data-reveal>Nuestro Método Ganador</h2>
-        <p class="text-center" style="margin-top: 8px; color: var(--text-muted);" data-reveal>Te mostramos el paso a paso del ÉXITO.</p>
+        <h2 class="section-title text-center" data-reveal data-i18n="method.title">Nuestro Método Ganador</h2>
+        <p class="text-center" style="margin-top: 8px; color: var(--text-muted);" data-reveal data-i18n="method.subtitle">Te mostramos el paso a paso del ÉXITO.</p>
         <div class="metodo-grid">
           <article class="panel glow step step-left" data-reveal>
             <div class="badge">Paso 1</div>
             <div class="thumb thumb-contain">
               <img class="thumb-img" alt="Paso 1" src="./images/Escuchamos-las-necesidades-del-cliente.webp" loading="lazy">
             </div>
-            <h3>1 Escuchamos las Necesidades del Cliente.</h3>
-            <p>Para poder arrancar con cualquier proyecto necesitamos saber cuales son las necesides de nuestro clientes y el modo operandi de su negocio, solicitamos toda la información que nos puedan brindar...y ahora es cuando estamos en condiciones de seguir al próximo paso.</p>
+            <h3 data-i18n="method.step1.title">1 Escuchamos las Necesidades del Cliente.</h3>
+            <p data-i18n="method.step1.desc">Para poder arrancar con cualquier proyecto necesitamos saber cuales son las necesides de nuestro clientes y el modo operandi de su negocio, solicitamos toda la información que nos puedan brindar...y ahora es cuando estamos en condiciones de seguir al próximo paso.</p>
           </article>
           
           <article class="panel glow step step-right" data-reveal>
@@ -226,8 +233,8 @@
             <div class="thumb thumb-contain">
               <img class="thumb-img" alt="Paso 2" src="./images/Analizamos-la-competencia.webp" loading="lazy">
             </div>
-            <h3>2- Analizamos la competencia.</h3>
-            <p>Comparamos los standares de la competencia para superarlos.</p>
+            <h3 data-i18n="method.step2.title">2- Analizamos la competencia.</h3>
+            <p data-i18n="method.step2.desc">Comparamos los standares de la competencia para superarlos.</p>
           </article>
           
           <article class="panel glow step step-left" data-reveal>
@@ -235,8 +242,8 @@
             <div class="thumb thumb-contain">
               <img class="thumb-img" alt="Paso 3" src="./images/Estudiamos-el-proyecto.webp" loading="lazy">
             </div>
-            <h3>3- Estudiamos el Proyecto</h3>
-            <p>Con la información recopilada, buscamos las mejores estrategias tecnológicas que se adecúen a las necesidades y objetivos de nuestro clientes.</p>
+            <h3 data-i18n="method.step3.title">3- Estudiamos el Proyecto</h3>
+            <p data-i18n="method.step3.desc">Con la información recopilada, buscamos las mejores estrategias tecnológicas que se adecúen a las necesidades y objetivos de nuestro clientes.</p>
           </article>
           
           <article class="panel glow step step-right" data-reveal>
@@ -244,8 +251,8 @@
             <div class="thumb thumb-contain">
               <img class="thumb-img" alt="Paso 4" src="./images/Materealizando-objetivos.webp" loading="lazy">
             </div>
-            <h3>4- Materealizando Objetivos.</h3>
-            <p>Ponemos Marcha y hacemos maqueta previa según  todo la información obtenida y analizada. Se presenta una primera muestra de lo Trabajado y se abona un 50% del presupuesto.</p>
+            <h3 data-i18n="method.step4.title">4- Materealizando Objetivos.</h3>
+            <p data-i18n="method.step4.desc">Ponemos Marcha y hacemos maqueta previa según  todo la información obtenida y analizada. Se presenta una primera muestra de lo Trabajado y se abona un 50% del presupuesto.</p>
           </article>
           
           <article class="panel glow step step-left" data-reveal>
@@ -253,8 +260,8 @@
             <div class="thumb thumb-contain">
               <img class="thumb-img" alt="Paso 5" src="./images/Conexion-buscadores-seo.webp" loading="lazy">
             </div>
-            <h3>5- Conexión con Buscadores y SEO</h3>
-            <p>Conectamos la web a Google Ads, Google Tag Manager, Google Analytics, Google Search Console, Meta (Facebook + Instagram + WhatsApp), Bing y Bing Ads. Optimización e Indexación de la Página para reconocimiento prioritario en buscadores.</p>
+            <h3 data-i18n="method.step5.title">5- Conexión con Buscadores y SEO</h3>
+            <p data-i18n="method.step5.desc">Conectamos la web a Google Ads, Google Tag Manager, Google Analytics, Google Search Console, Meta (Facebook + Instagram + WhatsApp), Bing y Bing Ads. Optimización e Indexación de la Página para reconocimiento prioritario en buscadores.</p>
           </article>
           
           <article class="panel glow step step-right" data-reveal>
@@ -262,8 +269,8 @@
             <div class="thumb thumb-contain">
               <img class="thumb-img" alt="Paso 6" src="./images/Entrega-de-la-web-Puesta-a-punto-y-seguimiento-mensual.webp" loading="lazy">
             </div>
-            <h3>6- Entrega de la web, Puesta a punto y seguimiento mensual.</h3>
-            <p>Ultimamos detalles. Se Abona el 50% del presupuesto restante. Hacemos entrega de la Página Web y hacemos un segumiento mensual para la implementación de nuevas tecnologías.</p>
+            <h3 data-i18n="method.step6.title">6- Entrega de la web, Puesta a punto y seguimiento mensual.</h3>
+            <p data-i18n="method.step6.desc">Ultimamos detalles. Se Abona el 50% del presupuesto restante. Hacemos entrega de la Página Web y hacemos un segumiento mensual para la implementación de nuevas tecnologías.</p>
           </article>
         </div>
       </section>
@@ -274,14 +281,14 @@
     <div id="vistaOpciones" style="display: none;">
       <section class="wrap" style="padding-top: 80px; padding-bottom: 80px;">
         <div class="panel glow" style="padding: 20px;" data-reveal>
-          <h1 class="neon" style="font-size: clamp(26px,4vw,40px); font-weight: 800;">Opciones de Desarrollo</h1>
-          <p style="margin-top: 8px; color: var(--text-muted);">Porque lo que soñás lo podemos <strong>codificar</strong>. Elegí un vertical o contanos tu idea y armamos el plan.</p>
+          <h2 class="neon" style="font-size: clamp(26px,4vw,40px); font-weight: 800;" data-i18n="options.title">Opciones de Desarrollo</h2>
+          <p style="margin-top: 8px; color: var(--text-muted);" data-i18n="options.subtitle">Porque lo que soñás lo podemos <strong>codificar</strong>. Elegí un vertical o contanos tu idea y armamos el plan.</p>
         </div>
         <div class="grid grid-2" style="margin-top: 24px;">
           
           <article class="panel glow" data-reveal>
-            <h3>Industria (manufactura)</h3>
-            <ul>
+            <h3 data-i18n="options.industry.title">Industria (manufactura)</h3>
+            <ul data-i18n="options.industry.list">
               <li>• Mantenimiento predictivo – Sensores (vibración/temperatura/consumo), modelo ML que anticipe fallas y genere órdenes en tu ERP/MES; alertas en Android.</li>
               <li>• Control de calidad por visión – Cámaras + modelos de visión (defectos, soldaduras, etiquetas) con registro y trazabilidad; OK/NO‑OK directo al SCADA.</li>
               <li>• Planificación y OEE inteligente – IA que secuencia órdenes minimizando setups y cuellos de botella; tablero OEE con causas automáticas.</li>
@@ -289,8 +296,8 @@
           </article>
 
           <article class="panel glow" data-reveal>
-            <h3>Finanzas (PyMEs)</h3>
-            <ul>
+            <h3 data-i18n="options.finance.title">Finanzas (PyMEs)</h3>
+            <ul data-i18n="options.finance.list">
               <li>• Lectura de comprobantes + AFIP – OCR + validación online, categorización contable y conciliación bancaria automática; banderas rojas por discrepancias.</li>
               <li>• Scoring de riesgo y mora – Modelos con variables contables/comerciales para priorizar cobranza, cupos y condiciones; semáforos y workflows.</li>
               <li>• Detección de fraude/anomalías – Gastos atípicos, proveedores duplicados, desvíos de caja; reglas + ML con auditoría y evidencia exportable.</li>
@@ -298,8 +305,8 @@
           </article>
 
           <article class="panel glow" data-reveal>
-            <h3>Hotelería</h3>
-            <ul>
+            <h3 data-i18n="options.hotel.title">Hotelería</h3>
+            <ul data-i18n="options.hotel.list">
               <li>• Precios dinámicos (revenue) – Ajuste tarifario por demanda, clima y eventos locales; restricciones y upsells automáticos.</li>
               <li>• Chatbot omnicanal (Web/WhatsApp) – Disponibilidad, reservas, cobros y upgrades; integra PMS/Channel Manager.</li>
               <li>• Housekeeping asistido por visión – App Android que reconoce estado de habitación/amenities y optimiza turnos.</li>
@@ -307,8 +314,8 @@
           </article>
 
           <article class="panel glow" data-reveal>
-            <h3>Restaurants</h3>
-            <ul>
+            <h3 data-i18n="options.restaurant.title">Restaurants</h3>
+            <ul data-i18n="options.restaurant.list">
               <li>• Forecast de demanda por plato – Predice ventas por franja y día; sugiere compras y mise en place para reducir quiebres/merma.</li>
               <li>• Upselling inteligente en POS – Sugerencias de combos y extras según historial y hora; A/B testing de menús y precios.</li>
               <li>• Control de porciones/mermas por visión – Cámaras + básculas conectadas para estandarizar raciones y detectar desvíos.</li>
@@ -316,8 +323,8 @@
           </article>
 
           <article class="panel glow" data-reveal>
-            <h3>Agro</h3>
-            <ul>
+            <h3 data-i18n="options.agro.title">Agro</h3>
+            <ul data-i18n="options.agro.list">
               <li>• Detección temprana de plagas/nutrientes – Móvil/dron con visión que clasifica estrés y recomienda correctivos (se enlaza con FertiCalc).</li>
               <li>• Riego y fertilización prescriptiva – Modelos con clima/ET0/fenología que calculan lámina, EC/pH objetivo y dosis.</li>
               <li>• Logística de cosecha y rutas – Optimiza turnos, ventanas de descarga y fletes; integra precios y humedad/mermas.</li>
@@ -325,8 +332,8 @@
           </article>
 
           <article class="panel glow" data-reveal>
-            <h3>Minería</h3>
-            <ul>
+            <h3 data-i18n="options.mining.title">Minería</h3>
+            <ul data-i18n="options.mining.list">
               <li>• Mantenimiento predictivo de flota pesada – Telemetría para anticipar fallas en palas/camiones; plan de repuestos.</li>
               <li>• Seguridad por visión (EPP/áreas) – Detección de casco/chaleco, zonas restringidas y proximidad a equipos; alertas.</li>
               <li>• Blend y recuperación en planta – Predice ley/recuperación y ajusta mezcla para maximizar producción y energía.</li>
@@ -334,8 +341,8 @@
           </article>
 
           <article class="panel glow" data-reveal>
-            <h3>Gobierno (sector público)</h3>
-            <ul>
+            <h3 data-i18n="options.gov.title">Gobierno (sector público)</h3>
+            <ul data-i18n="options.gov.list">
               <li>• Trámites inteligentes + validación automática – OCR de formularios y DNI; verificación en padrones; turnos y notificaciones.</li>
               <li>• Compras públicas y control del gasto con IA – Sobreprecios, proveedores vinculados y fraccionamiento; monitoreo y alertas.</li>
               <li>• Gestión urbana predictiva – Baches, alumbrado, residuos; ruteo óptimo de cuadrillas y modelos de riesgo de inundaciones/incendios.</li>
@@ -352,8 +359,8 @@
   <section class="wrap" style="padding: 24px 0;">
     <div class="cta-rail glow" data-reveal>
       <div>
-        <strong class="neon cta-title">¿Consultas? Para Mayor Información Usá el ChatBot</strong>
-        <span style="color: var(--text-muted);">Para presupuestos o Reuniones usá el ChatBot.</span>
+        <strong class="neon cta-title" data-i18n="cta.title">¿Consultas? Para Mayor Información Usá el ChatBot</strong>
+        <span style="color: var(--text-muted);" data-i18n="cta.subtitle">Para presupuestos o Reuniones usá el ChatBot.</span>
       </div>
     </div>
   </section>
@@ -361,9 +368,9 @@
   <!-- Footer -->
   <footer>
     <div class="wrap footer-content">
-      <p style="color: var(--text-muted);">© 2025 Ranquel Tech Lab</p>
+      <p style="color: var(--text-muted);" data-i18n="footer.copy">© 2025 Ranquel Tech Lab</p>
       <div class="footer-icons">
-        <a href="https://wa.me/5493584123456" aria-label="WhatsApp" class="footer-icon">
+        <a href="https://wa.me/5493584118722" aria-label="WhatsApp" class="footer-icon">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
             <path d="M20.52 3.48A11.94 11.94 0 0 0 12.06 0C5.46 0 0.12 5.34 0.12 11.94c0 2.1.54 4.08 1.5 5.82L0 24l6.42-1.62c1.68.9 3.6 1.44 5.64 1.44 6.6 0 11.94-5.34 11.94-11.94 0-3.18-1.26-6.06-3.48-8.4Z"/>
           </svg>
