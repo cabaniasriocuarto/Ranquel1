@@ -1,3 +1,6 @@
+# Permite que los motores indexen todo el sitio
 User-agent: *
 Allow: /
-Sitemap: https://www.ranquel.com.ar/sitemap.xml
+
+# Ubicación del sitemap para Google y otros buscadores
+Sitemap: https://www.ranqueltechlab.com/sitemap.xml
