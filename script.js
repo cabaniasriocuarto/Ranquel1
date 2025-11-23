@@ -314,7 +314,7 @@ document.addEventListener('DOMContentLoaded', () => {
     pages: 1,
     description: "",
     estimate: null,
-    ownerNotified: false,
+    leadSent: false,
   };
 
   function calcEstimate(projectType, pages) {
@@ -342,20 +342,25 @@ document.addEventListener('DOMContentLoaded', () => {
     return { min: 1000000, max: 2000000, currency: "ARS" };
   }
 
-  function sendOwnerNotifications({ whatsappOwnerUrl, mailtoUrl }) {
-    try {
-      setTimeout(() => {
-        window.open(whatsappOwnerUrl, "_blank");
-        const mailLink = document.createElement("a");
-        mailLink.href = mailtoUrl;
-        mailLink.style.display = "none";
-        document.body.appendChild(mailLink);
-        mailLink.click();
-        mailLink.remove();
-      }, 200);
-    } catch (error) {
-      console.warn("No se pudo notificar automáticamente", error);
-    }
+  function isValidAppsScriptEndpoint(endpoint) {
+    return endpoint && endpoint !== "URL_DE_TU_APP_SCRIPT_AQUI";
+  }
+
+  function sendLeadToAppsScript(endpoint, payload) {
+    if (!isValidAppsScriptEndpoint(endpoint)) return Promise.resolve();
+
+    state.leadSent = true;
+
+    return fetch(endpoint, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    }).catch((err) => {
+      console.error("Error enviando lead a Apps Script", err);
+      state.leadSent = false;
+    });
   }
 
   function render() {
@@ -481,25 +486,17 @@ ${s.description}</textarea>
     if (s.step === "estimate" && s.estimate) {
       const est = s.estimate;
 
-      if (APPS_SCRIPT_ENDPOINT) {
-        fetch(APPS_SCRIPT_ENDPOINT, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            name: s.name,
-            email: s.email,
-            phone: s.phone,
-            projectType: s.projectType,
-            pages: s.pages,
-            description: s.description,
-            estimateMin: est.min,
-            estimateMax: est.max,
-            currency: est.currency,
-          }),
-        }).catch((err) => {
-          console.error("Error enviando lead a Apps Script", err);
+      if (!state.leadSent) {
+        sendLeadToAppsScript(APPS_SCRIPT_ENDPOINT, {
+          name: s.name,
+          email: s.email,
+          phone: s.phone,
+          projectType: s.projectType,
+          pages: s.pages,
+          description: s.description,
+          estimateMin: est.min,
+          estimateMax: est.max,
+          currency: est.currency,
         });
       }
 
@@ -532,11 +529,6 @@ ${s.description}</textarea>
       const mailtoUrl = `mailto:${EMAIL_OWNER}?subject=${encodeURIComponent(
         emailSubject
       )}&body=${encodeURIComponent(emailBody)}`;
-
-      if (!state.ownerNotified) {
-        sendOwnerNotifications({ whatsappOwnerUrl, mailtoUrl });
-        state.ownerNotified = true;
-      }
 
       container.innerHTML = `
         <div>
@@ -595,7 +587,7 @@ ${s.description}</textarea>
         </div>
       `;
       document.getElementById("cb-again").onclick = () => {
-        state = { step: "intro", name: "", email: "", phone: "", projectType: "", pages: 1, description: "", estimate: null, ownerNotified: false };
+        state = { step: "intro", name: "", email: "", phone: "", projectType: "", pages: 1, description: "", estimate: null, leadSent: false };
         render();
       };
     }
