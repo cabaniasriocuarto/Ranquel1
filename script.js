@@ -158,9 +158,10 @@ const translations = {
   }
 };
 
-// IDs de EmailJS (reemplazar por los tuyos reales)
-const EMAILJS_SERVICE_ID = "service_ranquel";
-const EMAILJS_TEMPLATE_ID = "template_quote";
+// Endpoint del servicio de formularios (reemplazar con el tuyo)
+const QUOTE_FORM_ENDPOINT = "https://formspree.io/f/abcd1234";
+const QUOTE_FORM_SUBJECT = "Pedido de presupuesto";
+const QUOTE_FORM_RECIPIENT = "ranqueltechlab@gmail.com";
 
 // Abre el formulario y setea el "source" según el botón que tocaron
 function openQuoteFromButton(event) {
@@ -198,7 +199,9 @@ if (quoteForm) {
       quoteStatus.textContent = "Enviando tu solicitud...";
     }
 
-    const templateParams = {
+    const submissionData = {
+      subject: QUOTE_FORM_SUBJECT,
+      email_destino: QUOTE_FORM_RECIPIENT,
       from_name: document.getElementById("name").value,
       from_email: document.getElementById("email").value,
       phone: document.getElementById("phone").value,
@@ -209,10 +212,21 @@ if (quoteForm) {
     };
 
     try {
-      await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, templateParams);
+      const response = await fetch(QUOTE_FORM_ENDPOINT, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify(submissionData),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Request failed with status ${response.status}`);
+      }
 
       if (quoteStatus) {
-        quoteStatus.textContent = "¡Listo! Te enviamos el presupuesto aproximado a tu mail y en breve te contactamos.";
+        quoteStatus.textContent = "¡Listo! Recibimos tu pedido y en breve te contactamos con el presupuesto.";
       }
 
       quoteForm.reset();
