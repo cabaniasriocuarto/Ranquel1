@@ -303,6 +303,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const CALENDAR_LINK = "https://calendar.app.google/Gan912bCwXFqymKUA";
   const WHATSAPP_OWNER = "5493584118722";
   const EMAIL_OWNER = "ranqueltechlab@gmail.com";
+  const APPS_SCRIPT_ENDPOINT = "URL_DE_TU_APP_SCRIPT_AQUI";
 
   let state = {
     step: "intro",
@@ -386,6 +387,7 @@ document.addEventListener('DOMContentLoaded', () => {
           <input id="cb-name" class="chatbot-input" placeholder="Nombre y apellido" value="${s.name}">
           <input id="cb-email" class="chatbot-input" placeholder="Email" type="email" value="${s.email}">
           <input id="cb-phone" class="chatbot-input" placeholder="Teléfono / WhatsApp" value="${s.phone}">
+          <p class="chatbot-legal">Al enviar tus datos aceptás que te contactemos por email o WhatsApp para enviarte información y presupuestos.</p>
           <button id="cb-next-project" class="chatbot-btn-primary">Continuar con el proyecto →</button>
           <button id="cb-back-intro" class="chatbot-btn-link">Volver</button>
         </div>
@@ -478,6 +480,28 @@ ${s.description}</textarea>
 
     if (s.step === "estimate" && s.estimate) {
       const est = s.estimate;
+
+      if (APPS_SCRIPT_ENDPOINT) {
+        fetch(APPS_SCRIPT_ENDPOINT, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            name: s.name,
+            email: s.email,
+            phone: s.phone,
+            projectType: s.projectType,
+            pages: s.pages,
+            description: s.description,
+            estimateMin: est.min,
+            estimateMax: est.max,
+            currency: est.currency,
+          }),
+        }).catch((err) => {
+          console.error("Error enviando lead a Apps Script", err);
+        });
+      }
 
       const whatsappText =
         `Nuevo lead Ranquel Tech Lab:\n` +
