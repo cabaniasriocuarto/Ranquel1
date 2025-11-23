@@ -498,6 +498,53 @@ a:focus, button:focus {
   font-size: clamp(18px, 2.5vw, 22px);
 }
 
+.contact-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: 20px;
+  align-items: start;
+}
+
+@media (max-width: 960px) {
+  .contact-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+#quote-form {
+  display: grid;
+  gap: 12px;
+}
+
+#quote-form label {
+  display: grid;
+  gap: 4px;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+#quote-form input,
+#quote-form select,
+#quote-form textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+}
+
+#quote-form button {
+  width: 100%;
+  justify-content: center;
+}
+
+.status {
+  min-height: 20px;
+  color: var(--text-muted);
+  margin: 0;
+}
+
 footer {
   border-top: 1px solid var(--border);
   margin-top: 32px;
