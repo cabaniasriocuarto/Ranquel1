@@ -252,12 +252,18 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // Idiomas
+  const savedLang = localStorage.getItem('rtl-lang') || 'es';
+
   if (langSelector) {
-    langSelector.value = 'es';
+    langSelector.value = savedLang;
   }
-  applyTranslations('es');
+
+  applyTranslations(savedLang);
+
   langSelector?.addEventListener('change', (event) => {
-    applyTranslations(event.target.value);
+    const nextLang = event.target.value;
+    localStorage.setItem('rtl-lang', nextLang);
+    applyTranslations(nextLang);
   });
   
   // Botones específicos
