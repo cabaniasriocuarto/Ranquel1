@@ -158,88 +158,6 @@ const translations = {
   }
 };
 
-// Endpoint del servicio de formularios (reemplazar con el tuyo)
-const QUOTE_FORM_ENDPOINT = "https://formspree.io/f/abcd1234";
-const QUOTE_FORM_SUBJECT = "Pedido de presupuesto";
-const QUOTE_FORM_RECIPIENT = "ranqueltechlab@gmail.com";
-
-// Abre el formulario y setea el "source" según el botón que tocaron
-function openQuoteFromButton(event) {
-  event.preventDefault();
-  const source = event?.currentTarget?.getAttribute("data-source") || "boton-desconocido";
-  const sourceInput = document.getElementById("source");
-  if (sourceInput) sourceInput.value = source;
-
-  const form = document.getElementById("quote-form");
-  if (form) {
-    form.scrollIntoView({ behavior: "smooth" });
-  }
-}
-
-// Desde el chatbot
-function openQuoteFromChat(sourceLabel) {
-  const sourceInput = document.getElementById("source");
-  if (sourceInput) sourceInput.value = sourceLabel || "chatbot";
-
-  const form = document.getElementById("quote-form");
-  if (form) {
-    form.scrollIntoView({ behavior: "smooth" });
-  }
-}
-
-// Manejo del envío del formulario
-const quoteForm = document.getElementById("quote-form");
-const quoteStatus = document.getElementById("quote-status");
-
-if (quoteForm) {
-  quoteForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
-
-    if (quoteStatus) {
-      quoteStatus.textContent = "Enviando tu solicitud...";
-    }
-
-    const submissionData = {
-      subject: QUOTE_FORM_SUBJECT,
-      email_destino: QUOTE_FORM_RECIPIENT,
-      from_name: document.getElementById("name").value,
-      from_email: document.getElementById("email").value,
-      phone: document.getElementById("phone").value,
-      project_type: document.getElementById("projectType").value,
-      budget: document.getElementById("budget").value,
-      message: document.getElementById("message").value,
-      source: document.getElementById("source").value,
-    };
-
-    try {
-      const response = await fetch(QUOTE_FORM_ENDPOINT, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-        body: JSON.stringify(submissionData),
-      });
-
-      if (!response.ok) {
-        throw new Error(`Request failed with status ${response.status}`);
-      }
-
-      if (quoteStatus) {
-        quoteStatus.textContent = "¡Listo! Recibimos tu pedido y en breve te contactamos con el presupuesto.";
-      }
-
-      quoteForm.reset();
-      document.getElementById("source").value = "form-contacto";
-    } catch (error) {
-      console.error("Error al enviar presupuesto", error);
-      if (quoteStatus) {
-        quoteStatus.textContent = "Ocurrió un error al enviar el presupuesto. Probá de nuevo en unos minutos.";
-      }
-    }
-  });
-}
-
 function applyTranslations(lang = 'es') {
   const dict = translations[lang] || translations.es;
   document.documentElement.lang = lang;
@@ -553,7 +471,6 @@ ${s.description}</textarea>
           alert("Escribí una breve descripción del proyecto 😉");
           return;
         }
-        openQuoteFromChat("Chatbot – presupuesto aproximado");
         state.estimate = calcEstimate(state.projectType, state.pages);
         state.step = "estimate";
         render();
@@ -583,6 +500,36 @@ ${s.description}</textarea>
         });
       }
 
+      const whatsappText =
+        `Nuevo lead Ranquel Tech Lab:\n` +
+        `Nombre: ${s.name}\n` +
+        `Email: ${s.email}\n` +
+        `Teléfono: ${s.phone}\n` +
+        `Tipo: ${s.projectType}\n` +
+        `Páginas: ${s.pages}\n\n` +
+        `Descripción:\n${s.description}\n\n` +
+        `Presupuesto aprox: ${est.min} - ${est.max} ${est.currency}`;
+      const whatsappOwnerUrl = `https://wa.me/${WHATSAPP_OWNER}?text=${encodeURIComponent(
+        whatsappText
+      )}`;
+
+      const whatsappClientText =
+        `Hola, soy ${s.name} y quiero avanzar con un proyecto (${s.projectType ||
+        "web/app"}) para mi empresa. Vengo desde la web de Ranquel Tech Lab.`;
+      const whatsappClientUrl = `https://wa.me/${WHATSAPP_OWNER}?text=${encodeURIComponent(
+        whatsappClientText
+      )}`;
+
+      const emailSubject = `Consulta web/app - ${s.name}`;
+      const emailBody =
+        `Nombre: ${s.name}\nEmail: ${s.email}\nTeléfono: ${s.phone}\n\n` +
+        `Tipo de proyecto: ${s.projectType}\nPáginas: ${s.pages}\n\n` +
+        `Descripción:\n${s.description}\n\n` +
+        `Presupuesto aprox: ${est.min} - ${est.max} ${est.currency}`;
+      const mailtoUrl = `mailto:${EMAIL_OWNER}?subject=${encodeURIComponent(
+        emailSubject
+      )}&body=${encodeURIComponent(emailBody)}`;
+
       container.innerHTML = `
         <div>
           <p>En base a lo que me contaste, un proyecto así suele estar entre:</p>
@@ -608,18 +555,22 @@ ${s.description}</textarea>
             Agendar reunión en Google Calendar
           </a>
 
-          <button id="cb-open-quote" class="chatbot-btn-primary" style="display:block; text-align:center; margin-top:6px; background:#0ea5e9;">
-            Enviar datos y recibir presupuesto en mi mail
-          </button>
+          <a href="${whatsappClientUrl}" target="_blank" class="chatbot-btn-primary" style="display:block; text-align:center; margin-top:6px; background:#22c55e;">
+            Hablar ahora por WhatsApp
+          </a>
+
+          <a href="${mailtoUrl}" class="chatbot-btn-primary" style="display:block; text-align:center; margin-top:6px; background:#0ea5e9;">
+            Enviar datos por email
+          </a>
+
+          <a href="${whatsappOwnerUrl}" target="_blank" class="chatbot-btn-link">
+            (Solo para mí) Enviarme este lead a mi WhatsApp
+          </a>
 
           <button id="cb-close" class="chatbot-btn-link">Cerrar</button>
         </div>
       `;
 
-      const quoteBtn = document.getElementById("cb-open-quote");
-      if (quoteBtn) {
-        quoteBtn.onclick = () => openQuoteFromChat("Chatbot – presupuesto aproximado");
-      }
       document.getElementById("cb-close").onclick = () => {
         state.step = "done";
         render();
