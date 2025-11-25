@@ -401,26 +401,39 @@ function redirectToWhatsAppThankYou() {
     trackGoogleAdsConversion(CONVERSION_LABEL_PRESUPUESTO, 1);
   }
 
-  function submitLeadForm() {
-    const form = document.getElementById("leadForm");
-    if (!form) return;
-
+  async function submitLeadForm() {
     const { name, email, phone, projectType, details, contact } = state.budget;
     const observations = `${details} | Preferencia de contacto: ${contact}`;
 
-    const nombreInput = form.elements.namedItem("nombre");
-    const whatsappInput = form.elements.namedItem("whatsapp");
-    const emailInput = form.elements.namedItem("email");
-    const presupuestoInput = form.elements.namedItem("presupuesto");
-    const observacionesInput = form.elements.namedItem("observaciones");
+    try {
+      const response = await fetch(`https://formsubmit.co/ajax/${EMAIL_OWNER}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify({
+          nombre: name,
+          whatsapp: phone,
+          email,
+          presupuesto: projectType,
+          observaciones: observations,
+          _subject: "Nuevo presupuesto desde el chatbot",
+          _template: "table",
+          _captcha: "false",
+        }),
+      });
 
-    if (nombreInput) nombreInput.value = name;
-    if (whatsappInput) whatsappInput.value = phone;
-    if (emailInput) emailInput.value = email;
-    if (presupuestoInput) presupuestoInput.value = projectType;
-    if (observacionesInput) observacionesInput.value = observations;
+      if (!response.ok) {
+        throw new Error(`Error enviando lead: ${response.status}`);
+      }
 
-    form.submit();
+      return true;
+    } catch (error) {
+      console.error("No se pudo enviar el lead", error);
+      alert("No pudimos enviar tu solicitud. Escribinos por WhatsApp o probá de nuevo en unos minutos.");
+      return false;
+    }
   }
 
   function updateBudget(field, value) {
@@ -637,8 +650,10 @@ function redirectToWhatsAppThankYou() {
         };
       });
 
-      document.getElementById("cb-submit").onclick = () => {
-        submitLeadForm();
+      document.getElementById("cb-submit").onclick = async () => {
+        const sent = await submitLeadForm();
+        if (!sent) return;
+
         trackBudgetRequest('chatbot');
         state.step = "budget-success";
         render();
