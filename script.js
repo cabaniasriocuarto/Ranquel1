@@ -401,6 +401,28 @@ function redirectToWhatsAppThankYou() {
     trackGoogleAdsConversion(CONVERSION_LABEL_PRESUPUESTO, 1);
   }
 
+  function submitLeadForm() {
+    const form = document.getElementById("leadForm");
+    if (!form) return;
+
+    const { name, email, phone, projectType, details, contact } = state.budget;
+    const observations = `${details} | Preferencia de contacto: ${contact}`;
+
+    const nombreInput = form.elements.namedItem("nombre");
+    const whatsappInput = form.elements.namedItem("whatsapp");
+    const emailInput = form.elements.namedItem("email");
+    const presupuestoInput = form.elements.namedItem("presupuesto");
+    const observacionesInput = form.elements.namedItem("observaciones");
+
+    if (nombreInput) nombreInput.value = name;
+    if (whatsappInput) whatsappInput.value = phone;
+    if (emailInput) emailInput.value = email;
+    if (presupuestoInput) presupuestoInput.value = projectType;
+    if (observacionesInput) observacionesInput.value = observations;
+
+    form.submit();
+  }
+
   function updateBudget(field, value) {
     state = {
       ...state,
@@ -616,6 +638,7 @@ function redirectToWhatsAppThankYou() {
       });
 
       document.getElementById("cb-submit").onclick = () => {
+        submitLeadForm();
         trackBudgetRequest('chatbot');
         state.step = "budget-success";
         render();

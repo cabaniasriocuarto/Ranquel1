@@ -101,7 +101,24 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
 </head>
 <body>
-  
+
+  <!-- Formulario oculto para leads (FormSubmit) -->
+  <form
+    id="leadForm"
+    action="https://formsubmit.co/ranqueltechlab@gmail.com"
+    method="POST"
+    style="display:none;"
+  >
+    <input type="hidden" name="nombre" />
+    <input type="hidden" name="whatsapp" />
+    <input type="hidden" name="email" />
+    <input type="hidden" name="presupuesto" />
+    <input type="hidden" name="observaciones" />
+
+    <input type="hidden" name="_next" value="https://www.ranquel.com.ar/gracias" />
+    <input type="hidden" name="_subject" value="Nuevo presupuesto desde el chatbot" />
+  </form>
+
   <!-- Header -->
   <header id="header" class="backdrop">
     <nav class="wrap">
