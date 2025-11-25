@@ -178,7 +178,8 @@ function applyTranslations(lang = 'es') {
 // --- Google Ads helpers ---
 const GOOGLE_ADS_ID = 'AW-958141767';
 const CONVERSION_LABEL_WHATSAPP = 'wsp_click';
-const CONVERSION_LABEL_PRESUPUESTO = 'presupuesto_request';
+const CONVERSION_LABEL_PRESUPUESTO_EMAIL = 'bgv6CNz5mcUbEMeq8MgD';
+const CONVERSION_LABEL_VIDEOLLAMADA = 'videollamada_agendada';
 
 function trackGoogleAdsConversion(label, value = 1) {
   if (typeof gtag === 'function') {
@@ -372,6 +373,10 @@ function redirectToWhatsAppThankYou() {
   window.location.href = '/gracias-whatsapp';
 }
 
+function redirectToVideollamadaThankYou() {
+  window.location.href = '/gracias-videollamada.html';
+}
+
 // === Chatbot Ranquel Tech Lab ===
 (function () {
   const CALENDAR_LINK = "https://calendar.app.google/Gan912bCwXFqymKUA";
@@ -385,25 +390,33 @@ function redirectToWhatsAppThankYou() {
       phone: "",
       projectType: "",
       details: "",
+      budgetAmount: "",
+      budgetDetails: "",
       contact: "whatsapp",
     },
   };
 
-  function trackBudgetRequest(source = 'chatbot') {
+  function trackBudgetRequest(source = 'chatbot', contactType = 'email') {
     if (typeof gtag === 'function') {
       gtag('event', 'presupuesto_solicitado', {
         event_category: 'conversion',
-        event_label: source,
+        event_label: `${source}_${contactType}`,
         value: 1,
       });
     }
 
-    trackGoogleAdsConversion(CONVERSION_LABEL_PRESUPUESTO, 1);
+    const labelMap = {
+      whatsapp: CONVERSION_LABEL_WHATSAPP,
+      email: CONVERSION_LABEL_PRESUPUESTO_EMAIL,
+      videollamada: CONVERSION_LABEL_VIDEOLLAMADA,
+    };
+
+    trackGoogleAdsConversion(labelMap[contactType] || CONVERSION_LABEL_PRESUPUESTO_EMAIL, 1);
   }
 
   async function submitLeadForm() {
-    const { name, email, phone, projectType, details, contact } = state.budget;
-    const observations = `${details} | Preferencia de contacto: ${contact}`;
+    const { name, email, phone, projectType, details, contact, budgetAmount, budgetDetails } = state.budget;
+    const observations = `${details} | Preferencia de contacto: ${contact} | Estimado: ${budgetAmount || 'N/A'} (${budgetDetails || 'Precio orientativo'})`;
 
     try {
       const response = await fetch(`https://formsubmit.co/ajax/${EMAIL_OWNER}`, {
@@ -417,6 +430,8 @@ function redirectToWhatsAppThankYou() {
           whatsapp: phone,
           email,
           presupuesto: projectType,
+          presupuesto_estimado: budgetAmount,
+          detalle_presupuesto: budgetDetails,
           observaciones: observations,
           _subject: "Nuevo presupuesto desde el chatbot",
           _template: "table",
@@ -456,9 +471,145 @@ function redirectToWhatsAppThankYou() {
     return projectType.trim().length > 0 && details.trim().length > 5;
   }
 
+  // Función para calcular presupuesto basado en tipo de proyecto
+  function calculateBudget(projectType, details) {
+    const lang = document.documentElement.lang;
+    const isEnglish = lang === 'en';
+
+    // Precios en PESOS para español
+    const pricesES = {
+      'Landing Page': {
+        amount: 350000,
+        display: '$350.000',
+        details: 'Landing Page de 1 página - Precio orientativo',
+      },
+      'Página Web 2 páginas': {
+        amount: 650000,
+        display: '$650.000',
+        details: 'Página Web de 2 páginas + $50.000 por página extra - Precio orientativo',
+      },
+      'Página Web con Pagos': {
+        amount: 950000,
+        display: '$950.000',
+        details: 'Página Web con 2 páginas y sistema de pagos + $75.000 por página extra - Precio orientativo',
+      },
+      'Tienda E-commerce': {
+        amount: 1350000,
+        display: '$1.350.000',
+        details: 'Tienda E-commerce completa - Precio orientativo',
+      },
+      'App Android/iOS': {
+        amount: 2500000,
+        display: '$2.500.000',
+        details: 'App móvil para Android e iOS - Precio orientativo',
+      },
+      'App empresarial con IA': {
+        amount: 3000000,
+        display: '$3.000.000',
+        details: 'App empresarial con integración de IA - Precio orientativo',
+      },
+      'Desarrollo a medida': {
+        amount: 0,
+        display: 'Consultar',
+        details: 'Desarrollo a medida - Presupuesto sin cargo',
+      },
+    };
+
+    // Precios en DÓLARES para inglés
+    const pricesEN = {
+      'Landing Page': {
+        amount: 300,
+        display: '$300',
+        details: '1 Page Landing Page - Indicative price',
+      },
+      'Página Web 2 páginas': {
+        amount: 500,
+        display: '$500',
+        details: 'Website with 2 pages + $50 per extra page - Indicative price',
+      },
+      'Página Web con Pagos': {
+        amount: 700,
+        display: '$700',
+        details: 'Website with 2 pages and payments + $75 per extra page - Indicative price',
+      },
+      'Tienda E-commerce': {
+        amount: 950,
+        display: '$950',
+        details: 'Complete E-commerce Store - Indicative price',
+      },
+      'App Android/iOS': {
+        amount: 1800,
+        display: '$1,800',
+        details: 'Android/iOS App - Indicative price',
+      },
+      'App empresarial con IA': {
+        amount: 2000,
+        display: '$2,000',
+        details: 'Business App with AI integration - Indicative price',
+      },
+      'Desarrollo a medida': {
+        amount: 0,
+        display: 'Contact us',
+        details: 'Custom Development - Free quote',
+      },
+    };
+
+    const prices = isEnglish ? pricesEN : pricesES;
+    const priceInfo = prices[projectType] || prices['Desarrollo a medida'];
+
+    let finalAmount = priceInfo.amount;
+    let finalDisplay = priceInfo.display;
+    let finalDetails = priceInfo.details;
+
+    if ((projectType === 'Página Web 2 páginas' || projectType === 'Página Web con Pagos') && details) {
+      const pageMatch = details.match(/(\d+)\s*páginas?/i) || details.match(/(\d+)\s*pages?/i);
+      if (pageMatch) {
+        const pages = parseInt(pageMatch[1]);
+        if (pages > 2) {
+          const extraPages = pages - 2;
+          const extraCost = isEnglish
+            ? (projectType === 'Página Web 2 páginas' ? 50 : 75) * extraPages
+            : (projectType === 'Página Web 2 páginas' ? 50000 : 75000) * extraPages;
+
+          finalAmount += extraCost;
+          finalDisplay = isEnglish
+            ? `$${(priceInfo.amount + extraCost).toLocaleString('en-US')}`
+            : `$${(priceInfo.amount + extraCost).toLocaleString('es-AR')}`;
+
+          finalDetails = isEnglish
+            ? `${priceInfo.details.split(' - ')[0]} (${pages} pages total) - Indicative price`
+            : `${priceInfo.details.split(' - ')[0]} (${pages} páginas total) - Precio orientativo`;
+        }
+      }
+    }
+
+    return {
+      amount: finalAmount,
+      display: finalDisplay,
+      details: finalDetails,
+    };
+  }
+
   function buildBudgetMessage() {
-    const { name, email, phone, projectType, details, contact } = state.budget;
-    return `Hola, soy ${name}. Quiero un presupuesto para: ${projectType}. Detalles: ${details}. Mis datos de contacto son ${email} / ${phone}. Prefiero que me contacten por ${contact}.`;
+    const { name, email, phone, projectType, details, contact, budgetAmount, budgetDetails } = state.budget;
+    return `Hola, soy ${name}. Quiero un presupuesto para: ${projectType}. Detalles: ${details}. Estimado: ${budgetAmount || 'N/A'} (${budgetDetails || 'Precio orientativo'}). Mis datos de contacto son ${email} / ${phone}. Prefiero que me contacten por ${contact}.`;
+  }
+
+  async function handleBudgetConfirmation(contactType) {
+    updateBudget('contact', contactType);
+
+    const sent = await submitLeadForm();
+    if (!sent) return;
+
+    trackBudgetRequest('chatbot', contactType);
+
+    if (contactType === 'whatsapp') {
+      redirectToWhatsAppThankYou();
+    } else if (contactType === 'videollamada') {
+      redirectToVideollamadaThankYou();
+    } else {
+      redirectToBudgetThankYou();
+    }
   }
 
   function render() {
@@ -466,15 +617,17 @@ function redirectToWhatsAppThankYou() {
     if (!container) return;
 
     const s = state;
+    const lang = document.documentElement.lang;
+    const isEnglish = lang === 'en';
 
     if (s.step === "intro") {
       container.innerHTML = `
         <div>
-          <p><strong>Hola 👋</strong></p>
-          <p>Soy el asistente de <strong>Ranquel Tech Lab</strong>.</p>
-          <p class="chatbot-badge">Te ayudo a entender opciones y agendar una charla.</p>
-          <button id="cb-budget" class="chatbot-btn-primary" style="margin-bottom:6px;">Pedir presupuesto ⭐</button>
-          <button id="cb-start" class="chatbot-btn-primary">Ver opciones 👉</button>
+          <p><strong>${isEnglish ? 'Hi 👋' : 'Hola 👋'}</strong></p>
+          <p>${isEnglish ? 'I am the <strong>Ranquel Tech Lab</strong> assistant.' : 'Soy el asistente de <strong>Ranquel Tech Lab</strong>.'}</p>
+          <p class="chatbot-badge">${isEnglish ? 'I help you get a quote or book a call.' : 'Te ayudo a entender opciones y agendar una charla.'}</p>
+          <button id="cb-budget" class="chatbot-btn-primary" style="margin-bottom:6px;">${isEnglish ? 'Get a quote ⭐' : 'Pedir presupuesto ⭐'}</button>
+          <button id="cb-start" class="chatbot-btn-primary">${isEnglish ? 'See options 👉' : 'Ver opciones 👉'}</button>
         </div>
       `;
       document.getElementById("cb-start").onclick = () => {
@@ -491,30 +644,30 @@ function redirectToWhatsAppThankYou() {
     if (s.step === "options") {
       container.innerHTML = `
         <div>
-          <p>Contame qué necesitás y elegí cómo querés seguir.</p>
+          <p>${isEnglish ? 'Tell me what you need and pick how to continue.' : 'Contame qué necesitás y elegí cómo querés seguir.'}</p>
 
           <div class="chatbot-badge" style="margin-bottom:12px;">
-            <strong>Opciones rápidas:</strong>
+            <strong>${isEnglish ? 'Quick options:' : 'Opciones rápidas:'}</strong>
             <ul style="margin:8px 0 0 16px; padding:0 0 0 12px;">
-              <li>Agendar una videollamada breve.</li>
-              <li>Hablar ahora por WhatsApp.</li>
-              <li>Enviar info por email y te respondemos.</li>
+              <li>${isEnglish ? 'Book a short video call.' : 'Agendar una videollamada breve.'}</li>
+              <li>${isEnglish ? 'Chat now on WhatsApp.' : 'Hablar ahora por WhatsApp.'}</li>
+              <li>${isEnglish ? 'Send info by email and we reply.' : 'Enviar info por email y te respondemos.'}</li>
             </ul>
           </div>
 
           <a href="${CALENDAR_LINK}" target="_blank" class="chatbot-btn-primary" style="display:block; text-align:center; margin-top:6px;">
-            Agendar videollamada
+            ${isEnglish ? 'Book a video call' : 'Agendar videollamada'}
           </a>
 
           <a href="https://wa.me/${WHATSAPP_OWNER}" target="_blank" class="chatbot-btn-primary" data-whatsapp-location="wsp_bot" style="display:block; text-align:center; margin-top:6px; background:#22c55e;">
-            Hablar por WhatsApp
+            ${isEnglish ? 'Chat on WhatsApp' : 'Hablar por WhatsApp'}
           </a>
 
           <a href="mailto:${EMAIL_OWNER}" class="chatbot-btn-primary" style="display:block; text-align:center; margin-top:6px; background:#0ea5e9;">
-            Enviar info por email
+            ${isEnglish ? 'Send info by email' : 'Enviar info por email'}
           </a>
 
-          <button id="cb-back-intro" class="chatbot-btn-link">Volver</button>
+          <button id="cb-back-intro" class="chatbot-btn-link">${isEnglish ? 'Back' : 'Volver'}</button>
         </div>
       `;
 
@@ -529,18 +682,18 @@ function redirectToWhatsAppThankYou() {
     if (s.step === "budget-info") {
       container.innerHTML = `
         <div>
-          <p><strong>Datos para el presupuesto</strong></p>
-          <label>Nombre y apellido
-            <input id="cb-name" class="chatbot-input" type="text" placeholder="Tu nombre" value="${s.budget.name}" />
+          <p><strong>${isEnglish ? 'Details for your quote' : 'Datos para el presupuesto'}</strong></p>
+          <label>${isEnglish ? 'Full name' : 'Nombre y apellido'}
+            <input id="cb-name" class="chatbot-input" type="text" placeholder="${isEnglish ? 'Your name' : 'Tu nombre'}" value="${s.budget.name}" />
           </label>
           <label>Email
-            <input id="cb-email" class="chatbot-input" type="email" placeholder="tu@mail.com" value="${s.budget.email}" />
+            <input id="cb-email" class="chatbot-input" type="email" placeholder="${isEnglish ? 'you@mail.com' : 'tu@mail.com'}" value="${s.budget.email}" />
           </label>
-          <label>Teléfono / WhatsApp
-            <input id="cb-phone" class="chatbot-input" type="tel" placeholder="Código de país y número" value="${s.budget.phone}" />
+          <label>${isEnglish ? 'Phone / WhatsApp' : 'Teléfono / WhatsApp'}
+            <input id="cb-phone" class="chatbot-input" type="tel" placeholder="${isEnglish ? 'Country code and number' : 'Código de país y número'}" value="${s.budget.phone}" />
           </label>
-          <button id="cb-next-project" class="chatbot-btn-primary" ${isBudgetInfoValid() ? '' : 'disabled'}>Continuar</button>
-          <button id="cb-back-intro-2" class="chatbot-btn-link">Volver</button>
+          <button id="cb-next-project" class="chatbot-btn-primary" ${isBudgetInfoValid() ? '' : 'disabled'}>${isEnglish ? 'Continue' : 'Continuar'}</button>
+          <button id="cb-back-intro-2" class="chatbot-btn-link">${isEnglish ? 'Back' : 'Volver'}</button>
         </div>
       `;
 
@@ -576,44 +729,50 @@ function redirectToWhatsAppThankYou() {
     if (s.step === "budget-project") {
       container.innerHTML = `
         <div>
-          <p><strong>Contanos sobre el proyecto</strong></p>
-          <label>Tipo de proyecto
+          <p><strong>${isEnglish ? 'Tell us about your project' : 'Contanos sobre tu proyecto'}</strong></p>
+          <label>${isEnglish ? 'Project type' : 'Tipo de proyecto'}
             <select id="cb-project-type" class="chatbot-select">
-              <option value="">Elegí una opción</option>
-              <option value="Sitio web">Sitio web</option>
-              <option value="Tienda online / eCommerce">Tienda online / eCommerce</option>
-              <option value="App móvil">App móvil</option>
-              <option value="Sistema a medida / IA">Sistema a medida / IA</option>
-              <option value="Marketing y Ads">Marketing y Ads</option>
-              <option value="Otro">Otro</option>
+              <option value="">${isEnglish ? 'Choose an option' : 'Elegí una opción'}</option>
+              <option value="Landing Page">Landing Page</option>
+              <option value="Página Web 2 páginas">${isEnglish ? 'Web Page (2 pages)' : 'Página Web (2 páginas)'}</option>
+              <option value="Página Web con Pagos">${isEnglish ? 'Web Page with Payments' : 'Página Web con Pagos'}</option>
+              <option value="Tienda E-commerce">${isEnglish ? 'E-commerce Store' : 'Tienda E-commerce'}</option>
+              <option value="App Android/iOS">${isEnglish ? 'Android/iOS App' : 'App Android/iOS'}</option>
+              <option value="App empresarial con IA">${isEnglish ? 'Business App with AI' : 'App empresarial con IA'}</option>
+              <option value="Desarrollo a medida">${isEnglish ? 'Custom Development' : 'Desarrollo a medida'}</option>
             </select>
           </label>
-          <label>Detalles
-            <textarea id="cb-details" class="chatbot-textarea" placeholder="Qué necesitás, plazos y objetivos">${s.budget.details}</textarea>
+          <label>${isEnglish ? 'Details and requirements' : 'Detalles y requerimientos'}
+            <textarea id="cb-details" class="chatbot-textarea" placeholder="${isEnglish ? 'Describe your project, features, timeline, number of pages, etc.' : 'Describí tu proyecto, funcionalidades, plazos, cantidad de páginas, etc.'}">${s.budget.details}</textarea>
           </label>
-          <button id="cb-next-contact" class="chatbot-btn-primary" ${isBudgetProjectValid() ? '' : 'disabled'}>Elegir cómo seguimos</button>
-          <button id="cb-back-info" class="chatbot-btn-link">Volver</button>
+          <button id="cb-calculate-budget" class="chatbot-btn-primary" ${isBudgetProjectValid() ? '' : 'disabled'}>${isEnglish ? 'Calculate Budget' : 'Calcular Presupuesto'}</button>
+          <button id="cb-back-info" class="chatbot-btn-link">${isEnglish ? 'Back' : 'Volver'}</button>
         </div>
       `;
 
       const typeSelect = document.getElementById("cb-project-type");
       const detailsInput = document.getElementById("cb-details");
-      const nextBtn = document.getElementById("cb-next-contact");
+      const calcBtn = document.getElementById("cb-calculate-budget");
 
       typeSelect.value = s.budget.projectType;
 
       const handleProjectChange = () => {
         updateBudget('projectType', typeSelect.value);
         updateBudget('details', detailsInput.value);
-        nextBtn.disabled = !isBudgetProjectValid();
+        calcBtn.disabled = !isBudgetProjectValid();
       };
 
       typeSelect.onchange = handleProjectChange;
       detailsInput.oninput = handleProjectChange;
 
-      document.getElementById("cb-next-contact").onclick = () => {
+      document.getElementById("cb-calculate-budget").onclick = () => {
         if (!isBudgetProjectValid()) return;
-        state.step = "budget-contact";
+        const budget = calculateBudget(typeSelect.value, detailsInput.value);
+        updateBudget('projectType', typeSelect.value);
+        updateBudget('details', detailsInput.value);
+        updateBudget('budgetAmount', budget.display);
+        updateBudget('budgetDetails', budget.details);
+        state.step = "budget-result";
         render();
       };
 
@@ -624,74 +783,45 @@ function redirectToWhatsAppThankYou() {
       return;
     }
 
-    if (s.step === "budget-contact") {
+    if (s.step === "budget-result") {
+      const fallbackBudget = s.budget.projectType ? calculateBudget(s.budget.projectType, s.budget.details) : { display: '-', details: '' };
+      const budgetAmount = s.budget.budgetAmount || fallbackBudget.display;
+      const budgetDetails = s.budget.budgetDetails || fallbackBudget.details;
+
       container.innerHTML = `
         <div>
-          <p><strong>Cómo querés seguir</strong></p>
-          <div style="display:grid; gap:8px; margin:8px 0;">
-            <label style="display:flex; align-items:center; gap:8px;">
-              <input type="radio" name="cb-contact" value="whatsapp" ${s.budget.contact === 'whatsapp' ? 'checked' : ''} /> WhatsApp
-            </label>
-            <label style="display:flex; align-items:center; gap:8px;">
-              <input type="radio" name="cb-contact" value="email" ${s.budget.contact === 'email' ? 'checked' : ''} /> Email
-            </label>
-            <label style="display:flex; align-items:center; gap:8px;">
-              <input type="radio" name="cb-contact" value="videollamada" ${s.budget.contact === 'videollamada' ? 'checked' : ''} /> Agendar videollamada
-            </label>
+          <p><strong>${isEnglish ? '🎉 Budget Calculated!' : '🎉 ¡Presupuesto Calculado!'}</strong></p>
+          <div style="background: rgba(34,204,255,0.1); padding: 12px; border-radius: 8px; margin: 12px 0;">
+            <p style="font-size: 24px; font-weight: bold; color: var(--accent);">${budgetAmount}</p>
+            <p style="font-size: 12px; color: var(--text-muted);">${budgetDetails}</p>
           </div>
-          <button id="cb-submit" class="chatbot-btn-primary">Enviar solicitud</button>
-          <button id="cb-back-project" class="chatbot-btn-link">Volver</button>
+          <p><strong>${isEnglish ? 'Choose how to continue:' : 'Elegí cómo continuar:'}</strong></p>
+          
+          <button id="cb-confirm-whatsapp" class="chatbot-btn-primary" style="background:#22c55e;">
+            ${isEnglish ? '💬 Receive quote by WhatsApp' : '💬 Recibir presupuesto por WhatsApp'}
+          </button>
+          
+          <button id="cb-confirm-email" class="chatbot-btn-primary" style="background:#0ea5e9;">
+            ${isEnglish ? '📧 Receive quote by Email' : '📧 Recibir presupuesto por Email'}
+          </button>
+          
+          <button id="cb-confirm-call" class="chatbot-btn-primary">
+            ${isEnglish ? '📅 Schedule Explanatory Video Call' : '📅 Agendar Videollamada Explicativa'}
+          </button>
+          
+          <button id="cb-back-project" class="chatbot-btn-link">
+            ${isEnglish ? 'Back to modify' : 'Volver a modificar'}
+          </button>
         </div>
       `;
 
-      container.querySelectorAll('input[name="cb-contact"]').forEach((input) => {
-        input.onchange = () => {
-          updateBudget('contact', input.value);
-        };
-      });
-
-      document.getElementById("cb-submit").onclick = async () => {
-        const sent = await submitLeadForm();
-        if (!sent) return;
-
-        trackBudgetRequest('chatbot');
-        state.step = "budget-success";
-        render();
-      };
-
+      document.getElementById('cb-confirm-whatsapp').onclick = () => handleBudgetConfirmation('whatsapp');
+      document.getElementById('cb-confirm-email').onclick = () => handleBudgetConfirmation('email');
+      document.getElementById('cb-confirm-call').onclick = () => handleBudgetConfirmation('videollamada');
       document.getElementById("cb-back-project").onclick = () => {
         state.step = "budget-project";
         render();
       };
-      return;
-    }
-
-    if (s.step === "budget-success") {
-      const message = encodeURIComponent(buildBudgetMessage());
-      const whatsappLink = `https://wa.me/${WHATSAPP_OWNER}?text=${message}`;
-      const mailtoLink = `mailto:${EMAIL_OWNER}?subject=Solicitud%20de%20presupuesto&body=${message}`;
-
-      container.innerHTML = `
-        <div>
-          <p><strong>¡Listo! Enviamos tu solicitud interna.</strong></p>
-          <p class="chatbot-badge">Podés elegir cómo contactarnos ahora mismo:</p>
-          <a href="${whatsappLink}" target="_blank" class="chatbot-btn-primary" data-whatsapp-location="wsp_bot" style="background:#22c55e;">Hablar por WhatsApp</a>
-          <a href="${mailtoLink}" class="chatbot-btn-primary" style="background:#0ea5e9;">Enviar email</a>
-          <a href="${CALENDAR_LINK}" target="_blank" class="chatbot-btn-primary">Agendar videollamada</a>
-          <button id="cb-new" class="chatbot-btn-link">Cargar otro presupuesto</button>
-        </div>
-      `;
-
-      document.getElementById("cb-new").onclick = () => {
-        state = {
-          ...state,
-          step: "budget-info",
-          budget: { name: "", email: "", phone: "", projectType: "", details: "", contact: "whatsapp" },
-        };
-        render();
-      };
-
-      setupWhatsAppTracking(container);
       return;
     }
   }
