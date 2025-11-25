@@ -420,34 +420,48 @@ function redirectToVideollamadaThankYou() {
     const lang = document.documentElement.lang;
     const isEnglish = lang === 'en';
 
-    const autoresponseMessage = contact === 'videollamada'
-      ? (isEnglish
-        ? `Hi ${name}! Thanks for your interest. Here is the link to schedule your video call: ${CALENDAR_LINK}\nIf the times shown don't work for you, reply to this email with your availability.`
-        : `¡Hola ${name}! Gracias por tu interés. Acá tenés el link para agendar tu videollamada: ${CALENDAR_LINK}\nSi los horarios no te sirven, respondé este email con tu disponibilidad.`)
-      : '';
+    let autoresponseMessage = '';
+
+    if (contact === 'videollamada') {
+      autoresponseMessage = isEnglish
+        ? `Hi ${name}! Thanks for your interest in Ranquel Tech Lab.\n\nHere is your personalized link to schedule the video call:\n${CALENDAR_LINK}\n\nIf the available times don't work for you, please reply to this email with your availability and we'll find a suitable time.\n\nLooking forward to discussing your ${projectType} project!\n\nBest regards,\nRanquel Tech Lab Team`
+        : `¡Hola ${name}! Gracias por tu interés en Ranquel Tech Lab.\n\nAcá tenés tu link personalizado para agendar la videollamada:\n${CALENDAR_LINK}\n\nSi los horarios disponibles no te sirven, respondé este email con tu disponibilidad y coordinamos otro horario.\n\n¡Estamos ansiosos por conversar sobre tu proyecto de ${projectType}!\n\nSaludos cordiales,\nEquipo Ranquel Tech Lab`;
+    } else if (contact === 'email') {
+      autoresponseMessage = isEnglish
+        ? `Hi ${name}! We've received your budget request for ${projectType}. We'll review your requirements and get back to you within 24 hours with a detailed proposal.\n\nBest regards,\nRanquel Tech Lab Team`
+        : `¡Hola ${name}! Recibimos tu solicitud de presupuesto para ${projectType}. Vamos a revisar tus requerimientos y te respondemos en menos de 24 horas con una propuesta detallada.\n\nSaludos cordiales,\nEquipo Ranquel Tech Lab`;
+    }
 
     try {
+      const formData = {
+        nombre: name,
+        whatsapp: phone,
+        email,
+        presupuesto: projectType,
+        presupuesto_estimado: budgetAmount,
+        detalle_presupuesto: budgetDetails,
+        observaciones: observations,
+        _autoresponse: autoresponseMessage || undefined,
+        _subject: contact === 'videollamada'
+          ? "📅 Videollamada Agendada - Ranquel Tech Lab"
+          : "Nuevo presupuesto desde el chatbot",
+        _template: "table",
+        _captcha: "false",
+      };
+
+      if (contact === 'videollamada') {
+        formData.videollamada_link = CALENDAR_LINK;
+        formData.tipo_contacto = "Videollamada Agendada";
+        formData._subject = `📅 Videollamada Agendada - ${name} - ${projectType}`;
+      }
+
       const response = await fetch(`https://formsubmit.co/ajax/${EMAIL_OWNER}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Accept: "application/json",
         },
-        body: JSON.stringify({
-          nombre: name,
-          whatsapp: phone,
-          email,
-          presupuesto: projectType,
-          presupuesto_estimado: budgetAmount,
-          detalle_presupuesto: budgetDetails,
-          observaciones: observations,
-          videollamada_link: contact === 'videollamada' ? CALENDAR_LINK : undefined,
-          _autoresponse: autoresponseMessage || undefined,
-          _autoresponse_name: contact === 'videollamada' ? name : undefined,
-          _subject: "Nuevo presupuesto desde el chatbot",
-          _template: "table",
-          _captcha: "false",
-        }),
+        body: JSON.stringify(formData),
       });
 
       if (!response.ok) {
@@ -458,6 +472,46 @@ function redirectToVideollamadaThankYou() {
     } catch (error) {
       console.error("No se pudo enviar el lead", error);
       alert("No pudimos enviar tu solicitud. Escribinos por WhatsApp o probá de nuevo en unos minutos.");
+      return false;
+    }
+  }
+
+  // Función específica para enviar notificación de videollamada al dueño
+  async function sendVideocallNotificationToOwner() {
+    const { name, email, phone, projectType, details } = state.budget;
+    const lang = document.documentElement.lang;
+    const isEnglish = lang === 'en';
+
+    const notificationSubject = isEnglish
+      ? `🎯 VIDEO CALL REQUEST - ${name} - ${projectType}`
+      : `🎯 SOLICITUD DE VIDEOLAMADA - ${name} - ${projectType}`;
+
+    const notificationBody = isEnglish
+      ? `New video call request received:\n\nName: ${name}\nEmail: ${email}\nPhone: ${phone}\nProject: ${projectType}\nDetails: ${details}\n\nCalendar Link: ${CALENDAR_LINK}\n\nPlease contact the client to confirm the meeting.`
+      : `Nueva solicitud de videollamada recibida:\n\nNombre: ${name}\nEmail: ${email}\nTeléfono: ${phone}\nProyecto: ${projectType}\nDetalles: ${details}\n\nLink del Calendario: ${CALENDAR_LINK}\n\nPor favor contactá al cliente para confirmar la reunión.`;
+
+    try {
+      const response = await fetch(`https://formsubmit.co/ajax/${EMAIL_OWNER}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify({
+          nombre: `[VIDEOCALL] ${name}`,
+          email: email,
+          whatsapp: phone,
+          presupuesto: projectType,
+          observaciones: notificationBody,
+          _subject: notificationSubject,
+          _template: "table",
+          _captcha: "false",
+        }),
+      });
+
+      return response.ok;
+    } catch (error) {
+      console.error("Error enviando notificación de videollamada", error);
       return false;
     }
   }
@@ -611,6 +665,10 @@ function redirectToVideollamadaThankYou() {
 
     const sent = await submitLeadForm();
     if (!sent) return;
+
+    if (contactType === 'videollamada') {
+      await sendVideocallNotificationToOwner();
+    }
 
     trackBudgetRequest('chatbot', contactType);
 
@@ -807,19 +865,27 @@ function redirectToVideollamadaThankYou() {
             <p style="font-size: 12px; color: var(--text-muted);">${budgetDetails}</p>
           </div>
           <p><strong>${isEnglish ? 'Choose how to continue:' : 'Elegí cómo continuar:'}</strong></p>
-          
+
           <button id="cb-confirm-whatsapp" class="chatbot-btn-primary" style="background:#22c55e;">
             ${isEnglish ? '💬 Receive quote by WhatsApp' : '💬 Recibir presupuesto por WhatsApp'}
           </button>
-          
+
           <button id="cb-confirm-email" class="chatbot-btn-primary" style="background:#0ea5e9;">
             ${isEnglish ? '📧 Receive quote by Email' : '📧 Recibir presupuesto por Email'}
           </button>
-          
+
           <button id="cb-confirm-call" class="chatbot-btn-primary">
             ${isEnglish ? '📅 Schedule Explanatory Video Call' : '📅 Agendar Videollamada Explicativa'}
           </button>
-          
+
+          <div style="margin-top: 12px; padding: 12px; background: rgba(34,204,255,0.05); border-radius: 8px; border: 1px solid var(--border);">
+            <p style="font-size: 12px; color: var(--text-muted); margin: 0;">
+              ${isEnglish 
+                ? 'For video calls: You will receive the calendar link by email to choose your preferred time.' 
+                : 'Para videollamadas: Recibirás el link del calendario por email para elegir tu horario preferido.'}
+            </p>
+          </div>
+
           <button id="cb-back-project" class="chatbot-btn-link">
             ${isEnglish ? 'Back to modify' : 'Volver a modificar'}
           </button>
