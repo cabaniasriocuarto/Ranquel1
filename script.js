@@ -417,6 +417,14 @@ function redirectToVideollamadaThankYou() {
   async function submitLeadForm() {
     const { name, email, phone, projectType, details, contact, budgetAmount, budgetDetails } = state.budget;
     const observations = `${details} | Preferencia de contacto: ${contact} | Estimado: ${budgetAmount || 'N/A'} (${budgetDetails || 'Precio orientativo'})`;
+    const lang = document.documentElement.lang;
+    const isEnglish = lang === 'en';
+
+    const autoresponseMessage = contact === 'videollamada'
+      ? (isEnglish
+        ? `Hi ${name}! Thanks for your interest. Here is the link to schedule your video call: ${CALENDAR_LINK}\nIf the times shown don't work for you, reply to this email with your availability.`
+        : `¡Hola ${name}! Gracias por tu interés. Acá tenés el link para agendar tu videollamada: ${CALENDAR_LINK}\nSi los horarios no te sirven, respondé este email con tu disponibilidad.`)
+      : '';
 
     try {
       const response = await fetch(`https://formsubmit.co/ajax/${EMAIL_OWNER}`, {
@@ -433,6 +441,9 @@ function redirectToVideollamadaThankYou() {
           presupuesto_estimado: budgetAmount,
           detalle_presupuesto: budgetDetails,
           observaciones: observations,
+          videollamada_link: contact === 'videollamada' ? CALENDAR_LINK : undefined,
+          _autoresponse: autoresponseMessage || undefined,
+          _autoresponse_name: contact === 'videollamada' ? name : undefined,
           _subject: "Nuevo presupuesto desde el chatbot",
           _template: "table",
           _captcha: "false",
