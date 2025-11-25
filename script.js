@@ -175,6 +175,40 @@ function applyTranslations(lang = 'es') {
   });
 }
 
+// --- Métricas: click en WhatsApp ---
+function trackWhatsAppClick(location = 'desconocido') {
+  if (typeof gtag === 'function') {
+    // Evento para GA4 / Google Ads antes de abrir WhatsApp
+    gtag('event', 'click_whatsapp', {
+      event_category: 'engagement',
+      event_label: location,
+      value: 1,
+    });
+  }
+}
+
+function setupWhatsAppTracking(root = document) {
+  const whatsappLinks = root.querySelectorAll('a[href^="https://wa.me/"], a[href^="https://api.whatsapp.com/"]');
+
+  whatsappLinks.forEach((link) => {
+    if (link.dataset.whatsappTracked === 'true') return;
+
+    link.addEventListener('click', (event) => {
+      const location = link.dataset.whatsappLocation || 'desconocido';
+      trackWhatsAppClick(location);
+
+      // Abrimos WhatsApp en otra pestaña después de disparar el evento
+      event.preventDefault();
+      const href = link.href;
+      setTimeout(() => {
+        window.open(href, link.target || '_blank', 'noopener');
+      }, 120);
+    });
+
+    link.dataset.whatsappTracked = 'true';
+  });
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   
   // ===== NAVEGACIÓN =====
@@ -296,8 +330,23 @@ document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('[data-reveal]').forEach(el => {
     observer.observe(el);
   });
-  
-});
+
+  // Vinculamos medición de clics de WhatsApp en todos los enlaces estáticos
+  setupWhatsAppTracking();
+
+  });
+
+// Utilizar en el submit final del flujo de presupuesto (después de validar y enviar los datos)
+// Ejemplo: onSuccess -> redirectToBudgetThankYou();
+function redirectToBudgetThankYou() {
+  window.location.href = '/gracias-presupuesto';
+}
+
+// Ejemplo para flujos que quieran derivar a la página de gracias de WhatsApp
+function redirectToWhatsAppThankYou() {
+  window.location.href = '/gracias-whatsapp';
+}
+
 // === Chatbot Ranquel Tech Lab ===
 (function () {
   const CALENDAR_LINK = "https://calendar.app.google/Gan912bCwXFqymKUA";
@@ -347,7 +396,7 @@ document.addEventListener('DOMContentLoaded', () => {
             Agendar videollamada
           </a>
 
-          <a href="https://wa.me/${WHATSAPP_OWNER}" target="_blank" class="chatbot-btn-primary" style="display:block; text-align:center; margin-top:6px; background:#22c55e;">
+          <a href="https://wa.me/${WHATSAPP_OWNER}" target="_blank" class="chatbot-btn-primary" data-whatsapp-location="chatbot" style="display:block; text-align:center; margin-top:6px; background:#22c55e;">
             Hablar por WhatsApp
           </a>
 
@@ -363,6 +412,7 @@ document.addEventListener('DOMContentLoaded', () => {
         state.step = "intro";
         render();
       };
+      setupWhatsAppTracking(container);
       return;
     }
   }
