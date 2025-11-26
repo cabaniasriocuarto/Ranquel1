@@ -175,7 +175,26 @@ function applyTranslations(lang = 'es') {
   });
 }
 
-// --- Google Ads helpers ---
+// --- EmailJS + Google Ads helpers ---
+const EMAILJS_DEFAULTS = {
+  publicKey: 'TU_PUBLIC_KEY',
+  serviceId: 'service_xxxxxx',
+  templateLead: 'template_presupuesto',
+  templateVideollamada: 'template_videollamada',
+};
+
+function getEmailJsConfig() {
+  return {
+    ...EMAILJS_DEFAULTS,
+    ...(window.EMAILJS_CONFIG || {}),
+  };
+}
+
+function isEmailJsReady(config) {
+  const cfg = config || getEmailJsConfig();
+  return typeof emailjs !== 'undefined' && cfg.publicKey && cfg.serviceId && cfg.templateLead;
+}
+
 const GOOGLE_ADS_ID = 'AW-958141767';
 const CONVERSION_LABEL_WHATSAPP = 'wsp_click';
 const CONVERSION_LABEL_PRESUPUESTO_EMAIL = 'bgv6CNz5mcUbEMeq8MgD';
@@ -414,104 +433,69 @@ function redirectToVideollamadaThankYou() {
     trackGoogleAdsConversion(labelMap[contactType] || CONVERSION_LABEL_PRESUPUESTO_EMAIL, 1);
   }
 
+  async function enviarLeadAlAdmin(datos) {
+    const config = getEmailJsConfig();
+    if (!isEmailJsReady(config)) {
+      throw new Error('EmailJS no está configurado correctamente.');
+    }
+
+    const params = {
+      name: datos.name,
+      email: datos.email,
+      phone: datos.phone,
+      project_type: datos.projectType,
+      message: datos.message,
+      channel: datos.channel,
+      calendar_link: datos.calendar_link,
+    };
+
+    return emailjs.send(config.serviceId, config.templateLead, params, config.publicKey);
+  }
+
+  async function enviarMailVideollamadaAlUsuario(datos) {
+    const config = getEmailJsConfig();
+
+    if (!isEmailJsReady(config) || !config.templateVideollamada) {
+      throw new Error('EmailJS no está listo para enviar videollamadas.');
+    }
+
+    const params = {
+      name: datos.name,
+      email: datos.email,
+      phone: datos.phone,
+      project_type: datos.projectType,
+      message: datos.message,
+      calendar_link: datos.calendar_link,
+    };
+
+    return emailjs.send(config.serviceId, config.templateVideollamada, params, config.publicKey);
+  }
+
   async function submitLeadForm() {
     const { name, email, phone, projectType, details, contact, budgetAmount, budgetDetails } = state.budget;
     const observations = `${details} | Preferencia de contacto: ${contact} | Estimado: ${budgetAmount || 'N/A'} (${budgetDetails || 'Precio orientativo'})`;
-    const lang = document.documentElement.lang;
-    const isEnglish = lang === 'en';
 
-    let autoresponseMessage = '';
-
-    if (contact === 'videollamada') {
-      autoresponseMessage = isEnglish
-        ? `Hi ${name}! Thanks for your interest in Ranquel Tech Lab.\n\nHere is your personalized link to schedule the video call:\n${CALENDAR_LINK}\n\nIf the available times don't work for you, please reply to this email with your availability and we'll find a suitable time.\n\nLooking forward to discussing your ${projectType} project!\n\nBest regards,\nRanquel Tech Lab Team`
-        : `¡Hola ${name}! Gracias por tu interés en Ranquel Tech Lab.\n\nAcá tenés tu link personalizado para agendar la videollamada:\n${CALENDAR_LINK}\n\nSi los horarios disponibles no te sirven, respondé este email con tu disponibilidad y coordinamos otro horario.\n\n¡Estamos ansiosos por conversar sobre tu proyecto de ${projectType}!\n\nSaludos cordiales,\nEquipo Ranquel Tech Lab`;
-    } else if (contact === 'email') {
-      autoresponseMessage = isEnglish
-        ? `Hi ${name}! We've received your budget request for ${projectType}. We'll review your requirements and get back to you within 24 hours with a detailed proposal.\n\nBest regards,\nRanquel Tech Lab Team`
-        : `¡Hola ${name}! Recibimos tu solicitud de presupuesto para ${projectType}. Vamos a revisar tus requerimientos y te respondemos en menos de 24 horas con una propuesta detallada.\n\nSaludos cordiales,\nEquipo Ranquel Tech Lab`;
-    }
+    const leadPayload = {
+      name,
+      email,
+      phone,
+      projectType,
+      message: observations,
+      channel: contact,
+      calendar_link: CALENDAR_LINK,
+    };
 
     try {
-      const formData = {
-        nombre: name,
-        whatsapp: phone,
-        email,
-        presupuesto: projectType,
-        presupuesto_estimado: budgetAmount,
-        detalle_presupuesto: budgetDetails,
-        observaciones: observations,
-        _autoresponse: autoresponseMessage || undefined,
-        _subject: contact === 'videollamada'
-          ? "📅 Videollamada Agendada - Ranquel Tech Lab"
-          : "Nuevo presupuesto desde el chatbot",
-        _template: "table",
-        _captcha: "false",
-      };
+      await enviarLeadAlAdmin(leadPayload);
 
       if (contact === 'videollamada') {
-        formData.videollamada_link = CALENDAR_LINK;
-        formData.tipo_contacto = "Videollamada Agendada";
-        formData._subject = `📅 Videollamada Agendada - ${name} - ${projectType}`;
-      }
-
-      const response = await fetch(`https://formsubmit.co/ajax/${EMAIL_OWNER}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-        body: JSON.stringify(formData),
-      });
-
-      if (!response.ok) {
-        throw new Error(`Error enviando lead: ${response.status}`);
+        await enviarMailVideollamadaAlUsuario(leadPayload);
       }
 
       return true;
     } catch (error) {
-      console.error("No se pudo enviar el lead", error);
-      alert("No pudimos enviar tu solicitud. Escribinos por WhatsApp o probá de nuevo en unos minutos.");
-      return false;
-    }
-  }
-
-  // Función específica para enviar notificación de videollamada al dueño
-  async function sendVideocallNotificationToOwner() {
-    const { name, email, phone, projectType, details } = state.budget;
-    const lang = document.documentElement.lang;
-    const isEnglish = lang === 'en';
-
-    const notificationSubject = isEnglish
-      ? `🎯 VIDEO CALL REQUEST - ${name} - ${projectType}`
-      : `🎯 SOLICITUD DE VIDEOLAMADA - ${name} - ${projectType}`;
-
-    const notificationBody = isEnglish
-      ? `New video call request received:\n\nName: ${name}\nEmail: ${email}\nPhone: ${phone}\nProject: ${projectType}\nDetails: ${details}\n\nCalendar Link: ${CALENDAR_LINK}\n\nPlease contact the client to confirm the meeting.`
-      : `Nueva solicitud de videollamada recibida:\n\nNombre: ${name}\nEmail: ${email}\nTeléfono: ${phone}\nProyecto: ${projectType}\nDetalles: ${details}\n\nLink del Calendario: ${CALENDAR_LINK}\n\nPor favor contactá al cliente para confirmar la reunión.`;
-
-    try {
-      const response = await fetch(`https://formsubmit.co/ajax/${EMAIL_OWNER}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-        body: JSON.stringify({
-          nombre: `[VIDEOCALL] ${name}`,
-          email: email,
-          whatsapp: phone,
-          presupuesto: projectType,
-          observaciones: notificationBody,
-          _subject: notificationSubject,
-          _template: "table",
-          _captcha: "false",
-        }),
-      });
-
-      return response.ok;
-    } catch (error) {
-      console.error("Error enviando notificación de videollamada", error);
+      console.error('No se pudo enviar el lead', error);
+      alert('No pudimos enviar tu solicitud. Escribinos por WhatsApp o probá de nuevo en unos minutos.');
       return false;
     }
   }
@@ -665,10 +649,6 @@ function redirectToVideollamadaThankYou() {
 
     const sent = await submitLeadForm();
     if (!sent) return;
-
-    if (contactType === 'videollamada') {
-      await sendVideocallNotificationToOwner();
-    }
 
     trackBudgetRequest('chatbot', contactType);
 
