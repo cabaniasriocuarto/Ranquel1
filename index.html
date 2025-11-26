@@ -119,6 +119,23 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <input type="hidden" name="_subject" value="Nuevo presupuesto desde el chatbot" />
   </form>
 
+  <!-- EmailJS SDK + configuración de plantillas -->
+  <script src="https://cdn.emailjs.com/sdk/3.11.0/email.min.js"></script>
+  <script>
+    window.EMAILJS_CONFIG = {
+      publicKey: 'TU_PUBLIC_KEY',
+      serviceId: 'service_xxxxxx',
+      templateLead: 'template_presupuesto',
+      templateVideollamada: 'template_videollamada'
+    };
+
+    (function () {
+      if (window.emailjs && window.EMAILJS_CONFIG.publicKey) {
+        emailjs.init(window.EMAILJS_CONFIG.publicKey);
+      }
+    })();
+  </script>
+
   <!-- Header -->
   <header id="header" class="backdrop">
     <nav class="wrap">
