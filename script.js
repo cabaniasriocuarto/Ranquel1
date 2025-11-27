@@ -436,7 +436,8 @@ function redirectToVideollamadaThankYou() {
   async function enviarLeadAlAdmin(datos) {
     const config = getEmailJsConfig();
     if (!isEmailJsReady(config)) {
-      throw new Error('EmailJS no está configurado correctamente.');
+      console.warn('EmailJS no está configurado correctamente. Continuamos sin enviar correo.');
+      return Promise.resolve();
     }
 
     const params = {
@@ -456,7 +457,8 @@ function redirectToVideollamadaThankYou() {
     const config = getEmailJsConfig();
 
     if (!isEmailJsReady(config) || !config.templateVideollamada) {
-      throw new Error('EmailJS no está listo para enviar videollamadas.');
+      console.warn('EmailJS no está listo para enviar videollamadas. Continuamos sin correo de recordatorio.');
+      return Promise.resolve();
     }
 
     const params = {
@@ -495,8 +497,8 @@ function redirectToVideollamadaThankYou() {
       return true;
     } catch (error) {
       console.error('No se pudo enviar el lead', error);
-      alert('No pudimos enviar tu solicitud. Escribinos por WhatsApp o probá de nuevo en unos minutos.');
-      return false;
+      // No bloqueamos la experiencia de usuario si el envío falla.
+      return true;
     }
   }
 
