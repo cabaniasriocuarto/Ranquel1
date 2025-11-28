@@ -199,6 +199,7 @@ const GOOGLE_ADS_ID = 'AW-958141767';
 const CONVERSION_LABEL_WHATSAPP = 'wsp_click';
 const CONVERSION_LABEL_PRESUPUESTO_EMAIL = 'bgv6CNz5mcUbEMeq8MgD';
 const CONVERSION_LABEL_VIDEOLLAMADA = 'videollamada_agendada';
+const CONVERSION_LABEL_LLAMADA = 'llamada_click';
 
 function trackGoogleAdsConversion(label, value = 1) {
   if (typeof gtag === 'function') {
@@ -206,6 +207,28 @@ function trackGoogleAdsConversion(label, value = 1) {
       send_to: `${GOOGLE_ADS_ID}/${label}`,
       value,
     });
+  }
+}
+
+function trackContactChannel(channel = 'email', origin = 'desconocido') {
+  if (typeof gtag === 'function') {
+    gtag('event', `${channel}_click`, {
+      event_category: 'engagement',
+      event_label: origin,
+      value: 1,
+    });
+  }
+
+  const labelMap = {
+    whatsapp: CONVERSION_LABEL_WHATSAPP,
+    email: CONVERSION_LABEL_PRESUPUESTO_EMAIL,
+    videollamada: CONVERSION_LABEL_VIDEOLLAMADA,
+    llamada: CONVERSION_LABEL_LLAMADA,
+  };
+
+  const label = labelMap[channel];
+  if (label) {
+    trackGoogleAdsConversion(label, 1);
   }
 }
 
@@ -221,6 +244,24 @@ function trackWhatsAppClick(location = 'desconocido') {
   }
 
   trackGoogleAdsConversion(CONVERSION_LABEL_WHATSAPP, 1);
+}
+
+function attachContactTracking(link, channel, origin = 'desconocido') {
+  if (!link || link.dataset.contactTracked === 'true') return;
+
+  link.addEventListener('click', (event) => {
+    const href = link.href;
+    trackContactChannel(channel, origin);
+
+    if (link.href.startsWith('mailto:') || link.href.startsWith('tel:') || link.target === '_blank') {
+      event.preventDefault();
+      setTimeout(() => {
+        window.open(href, link.target || '_self', link.target ? 'noopener' : undefined);
+      }, 120);
+    }
+  });
+
+  link.dataset.contactTracked = 'true';
 }
 
 function setupWhatsAppTracking(root = document) {
@@ -378,6 +419,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Vinculamos medición de clics de WhatsApp en todos los enlaces estáticos
   setupWhatsAppTracking();
+
+  // Seguimiento de llamadas telefónicas
+  document.querySelectorAll('a[href^="tel:"]').forEach((link) => {
+    const origin = link.dataset.callLocation || 'telefono';
+    attachContactTracking(link, 'llamada', origin);
+  });
+
+  // Seguimiento de mails directos
+  document.querySelectorAll('a[href^="mailto:"]').forEach((link) => {
+    attachContactTracking(link, 'email', link.dataset.emailLocation || 'mailto');
+  });
 
   });
 
@@ -714,7 +766,7 @@ function redirectToVideollamadaThankYou() {
             ${isEnglish ? 'Chat on WhatsApp' : 'Hablar por WhatsApp'}
           </a>
 
-          <a href="mailto:${EMAIL_OWNER}" class="chatbot-btn-primary" style="display:block; text-align:center; margin-top:6px; background:#0ea5e9;">
+          <a href="mailto:${EMAIL_OWNER}" class="chatbot-btn-primary cb-email-link" data-email-location="chatbot_options" style="display:block; text-align:center; margin-top:6px; background:#0ea5e9;">
             ${isEnglish ? 'Send info by email' : 'Enviar info por email'}
           </a>
 
@@ -727,6 +779,12 @@ function redirectToVideollamadaThankYou() {
         render();
       };
       setupWhatsAppTracking(container);
+
+      const videoLink = container.querySelector('a[target="_blank"][href^="https://calendar.app"]');
+      const emailLink = container.querySelector('.cb-email-link');
+
+      if (videoLink) attachContactTracking(videoLink, 'videollamada', 'chatbot_opciones');
+      if (emailLink) attachContactTracking(emailLink, 'email', 'chatbot_opciones');
       return;
     }
 
