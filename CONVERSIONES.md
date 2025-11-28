@@ -12,6 +12,10 @@ Resumen de las etiquetas y eventos de conversión implementados en el sitio:
   - Evento GA4 `videollamada_agendada` con `event_category: lead` y `event_label: videollamada_chatbot` en `/gracias-videollamada.html`.
 - **Gracias por Mail (envío de presupuesto por correo)**
   - Evento GA4 `presupuesto_enviado` con `event_category: lead` y `event_label: presupuesto_web` en `/gracias-presupuesto`.
+  - Conversión de Google Ads: `AW-958141767/bgv6CNz5mcUbEMeq8MgD`.
+- **Llamadas (click en teléfono)**
+  - Evento GA4 `llamada_click` con `event_label` según el atributo `data-call-location`.
+  - Conversión de Google Ads: `AW-958141767/llamada_click`.
 
 Rutas de las páginas de agradecimiento:
 - Presupuesto por email: `/gracias-presupuesto`

@@ -530,9 +530,11 @@ footer {
 
 .footer-content {
   padding: 24px 0 96px 0;
-  display: grid;
-  gap: 12px;
-  justify-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 18px;
+  align-items: center;
+  justify-content: center;
 }
 
 .footer-icons {
@@ -540,6 +542,26 @@ footer {
   gap: 12px;
   justify-content: center;
   flex-wrap: wrap;
+}
+
+.footer-phone {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text);
+  text-decoration: none;
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: 9999px;
+  transition: all 0.2s ease;
+  font-weight: 600;
+  background: rgba(34,204,255,0.04);
+}
+
+.footer-phone:hover {
+  border-color: var(--accent);
+  background: rgba(34,204,255,.1);
+  transform: translateY(-1px);
 }
 
 .footer-icon {
@@ -570,6 +592,22 @@ footer {
 .reveal-in {
   opacity: 1 !important;
   transform: translateY(0) !important;
+}
+
+.mapa-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.mapa-embed {
+  margin-top: 12px;
+  overflow: hidden;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  box-shadow: 0 20px 70px rgba(0,0,0,0.28);
 }
 
 @media (max-width: 640px) {
