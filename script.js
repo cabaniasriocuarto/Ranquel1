@@ -749,7 +749,7 @@ function redirectToVideollamadaThankYou() {
           <p><strong>${isEnglish ? 'Hi 👋' : 'Hola 👋'}</strong></p>
           <p>${isEnglish ? 'I am the <strong>Ranquel Tech Lab</strong> assistant.' : 'Soy el asistente de <strong>Ranquel Tech Lab</strong>.'}</p>
           <p class="chatbot-badge">${isEnglish ? 'I help you get a quote or book a call.' : 'Te ayudo a entender opciones y agendar una charla.'}</p>
-          <button id="cb-budget" class="chatbot-btn-primary" style="margin-bottom:6px;">${isEnglish ? 'Get a quote ⭐' : 'Pedir presupuesto ⭐'}</button>
+          <button id="cb-budget" class="chatbot-btn-primary" style="margin-bottom:6px;">${isEnglish ? 'Get a quote ⭐' : 'Mirar Precios ⭐'}</button>
           <button id="cb-start" class="chatbot-btn-primary">${isEnglish ? 'See options 👉' : 'Ver opciones 👉'}</button>
         </div>
       `;
