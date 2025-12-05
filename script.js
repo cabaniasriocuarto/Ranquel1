@@ -195,6 +195,20 @@ function applyTranslations(lang = 'es') {
   });
 }
 
+function ensureNoopener(link) {
+  if (!link) return;
+  const rel = link.getAttribute('rel') || '';
+  const tokens = new Set(rel.split(/\s+/).filter(Boolean));
+  tokens.add('noopener');
+  tokens.add('noreferrer');
+  link.setAttribute('rel', Array.from(tokens).join(' '));
+}
+
+function hardenExternalLinks(root = document) {
+  if (!root || typeof root.querySelectorAll !== 'function') return;
+  root.querySelectorAll('a[target="_blank"]').forEach(ensureNoopener);
+}
+
 // --- EmailJS + Google Ads helpers ---
 const EMAILJS_DEFAULTS = {
   publicKey: 'TU_PUBLIC_KEY',
@@ -322,7 +336,9 @@ document.addEventListener('DOMContentLoaded', () => {
   const vistaInicio = document.getElementById('vistaInicio');
   const vistaOpciones = document.getElementById('vistaOpciones');
   const langSelector = document.getElementById('langSelector');
-  
+
+  hardenExternalLinks();
+
   let menuOpen = false;
   
   // Toggle menú móvil
@@ -778,11 +794,11 @@ function redirectToVideollamadaThankYou() {
             </ul>
           </div>
 
-          <a href="${CALENDAR_LINK}" target="_blank" class="chatbot-btn-primary" style="display:block; text-align:center; margin-top:6px;">
+          <a href="${CALENDAR_LINK}" target="_blank" rel="noopener noreferrer" class="chatbot-btn-primary" style="display:block; text-align:center; margin-top:6px;">
             ${isEnglish ? 'Book a video call' : 'Agendar videollamada'}
           </a>
 
-          <a href="https://wa.me/${WHATSAPP_OWNER}" target="_blank" class="chatbot-btn-primary" data-whatsapp-location="wsp_bot" style="display:block; text-align:center; margin-top:6px; background:#22c55e;">
+          <a href="https://wa.me/${WHATSAPP_OWNER}" target="_blank" rel="noopener noreferrer" class="chatbot-btn-primary" data-whatsapp-location="wsp_bot" style="display:block; text-align:center; margin-top:6px; background:#22c55e;">
             ${isEnglish ? 'Chat on WhatsApp' : 'Hablar por WhatsApp'}
           </a>
 
@@ -793,6 +809,8 @@ function redirectToVideollamadaThankYou() {
           <button id="cb-back-intro" class="chatbot-btn-link">${isEnglish ? 'Back' : 'Volver'}</button>
         </div>
       `;
+
+      hardenExternalLinks(container);
 
       document.getElementById("cb-back-intro").onclick = () => {
         state.step = "intro";
