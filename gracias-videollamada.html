@@ -9,18 +9,19 @@
   <title>Videollamada Agendada | Ranquel Tech Lab</title>
   <link rel="stylesheet" href="./styles.css">
   
-  <!-- Google Ads Conversion Tracking -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=AW-958141767"></script>
+  <!-- GA4 + Google Ads base tags -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-JY9JDYZB52"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
+    function gtag(){dataLayer.push(arguments);} 
     gtag('js', new Date());
+
+    // GA4
+    gtag('config', 'G-JY9JDYZB52');
+
+    // Google Ads
     gtag('config', 'AW-958141767');
   </script>
-  <!-- Event snippet for Reservar cita conversion page -->
-<script>
-  gtag('event', 'conversion', {'send_to': 'AW-958141767/aqEJCMyjvccbEMeq8MgD'});
-</script>
 </head>
 <body class="thankyou-page">
   <main class="wrap section-padding" style="min-height: 60vh; text-align:center;">
