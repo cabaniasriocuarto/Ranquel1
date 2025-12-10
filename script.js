@@ -521,13 +521,29 @@ function redirectToVideollamadaThankYou() {
     trackGoogleAdsConversion(labelMap[contactType] || CONVERSION_LABEL_PRESUPUESTO_EMAIL, 1);
   }
 
+  async function enviarLeadPorFormSubmit(datos) {
+    const formData = new FormData();
+    const observaciones = `${datos.message} | Canal: ${datos.channel} | Calendario: ${datos.calendar_link || 'N/A'}`;
+
+    formData.append('nombre', datos.name || '');
+    formData.append('whatsapp', datos.phone || '');
+    formData.append('email', datos.email || '');
+    formData.append('presupuesto', datos.projectType || '');
+    formData.append('observaciones', observaciones);
+    formData.append('_subject', 'Nuevo presupuesto desde el chatbot');
+    formData.append('_next', 'https://www.ranquel.com.ar/gracias');
+
+    return fetch('https://formsubmit.co/ajax/ranqueltechlab@gmail.com', {
+      method: 'POST',
+      headers: { Accept: 'application/json' },
+      body: formData,
+    }).catch((error) => {
+      console.error('No se pudo enviar el lead por FormSubmit', error);
+    });
+  }
+
   async function enviarLeadAlAdmin(datos) {
     const config = getEmailJsConfig();
-    if (!isEmailJsReady(config)) {
-      console.warn('EmailJS no está configurado correctamente. Continuamos sin enviar correo.');
-      return Promise.resolve();
-    }
-
     const params = {
       name: datos.name,
       email: datos.email,
@@ -538,7 +554,18 @@ function redirectToVideollamadaThankYou() {
       calendar_link: datos.calendar_link,
     };
 
-    return emailjs.send(config.serviceId, config.templateLead, params, config.publicKey);
+    if (isEmailJsReady(config)) {
+      try {
+        await emailjs.send(config.serviceId, config.templateLead, params, config.publicKey);
+        return;
+      } catch (error) {
+        console.error('No se pudo enviar el lead por EmailJS, se intenta FormSubmit.', error);
+      }
+    } else {
+      console.warn('EmailJS no está configurado correctamente. Usando FormSubmit.');
+    }
+
+    return enviarLeadPorFormSubmit(datos);
   }
 
   async function enviarMailVideollamadaAlUsuario(datos) {
