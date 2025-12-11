@@ -521,13 +521,58 @@ function redirectToVideollamadaThankYou() {
     trackGoogleAdsConversion(labelMap[contactType] || CONVERSION_LABEL_PRESUPUESTO_EMAIL, 1);
   }
 
+  async function enviarLeadPorFormSubmit(datos) {
+    const observaciones = `${datos.message} | Canal: ${datos.channel} | Calendario: ${datos.calendar_link || 'N/A'}`;
+
+    const formData = new FormData();
+    formData.append('nombre', datos.name || '');
+    formData.append('whatsapp', datos.phone || '');
+    formData.append('email', datos.email || '');
+    formData.append('presupuesto', datos.projectType || '');
+    formData.append('observaciones', observaciones);
+    formData.append('_subject', 'Nuevo presupuesto desde el chatbot');
+    formData.append('_next', 'https://www.ranquel.com.ar/gracias');
+    formData.append('_captcha', 'false');
+    formData.append('_template', 'table');
+
+    const urlencodedPayload = new URLSearchParams({
+      nombre: datos.name || '',
+      whatsapp: datos.phone || '',
+      email: datos.email || '',
+      presupuesto: datos.projectType || '',
+      observaciones,
+      _subject: 'Nuevo presupuesto desde el chatbot',
+      _next: 'https://www.ranquel.com.ar/gracias',
+      _captcha: 'false',
+      _template: 'table',
+    });
+
+    const primaryRequest = fetch('https://formsubmit.co/ajax/ranqueltechlab@gmail.com', {
+      method: 'POST',
+      headers: { Accept: 'application/json' },
+      body: formData,
+    });
+
+    // Enviamos un respaldo adicional en modo no-cors para evitar bloqueos por CORS u orígenes no permitidos.
+    const fallbackRequest = fetch('https://formsubmit.co/ranqueltechlab@gmail.com', {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: urlencodedPayload,
+    });
+
+    return Promise.allSettled([
+      primaryRequest.catch((error) => {
+        console.error('No se pudo enviar el lead por FormSubmit (AJAX)', error);
+      }),
+      fallbackRequest.catch((error) => {
+        console.error('No se pudo enviar el lead por FormSubmit (no-cors)', error);
+      }),
+    ]);
+  }
+
   async function enviarLeadAlAdmin(datos) {
     const config = getEmailJsConfig();
-    if (!isEmailJsReady(config)) {
-      console.warn('EmailJS no está configurado correctamente. Continuamos sin enviar correo.');
-      return Promise.resolve();
-    }
-
     const params = {
       name: datos.name,
       email: datos.email,
@@ -538,7 +583,25 @@ function redirectToVideollamadaThankYou() {
       calendar_link: datos.calendar_link,
     };
 
-    return emailjs.send(config.serviceId, config.templateLead, params, config.publicKey);
+    // Siempre enviamos por FormSubmit para garantizar recepción en ranqueltechlab@gmail.com
+    const formSubmitPromise = enviarLeadPorFormSubmit({
+      ...datos,
+      message: `${datos.message} | Copia enviada automáticamente`,
+    });
+
+    if (!isEmailJsReady(config)) {
+      console.warn('EmailJS no está configurado correctamente. Solo se usará FormSubmit.');
+      return formSubmitPromise;
+    }
+
+    // EmailJS se envía en paralelo y no bloquea el fallback
+    const emailJsPromise = emailjs
+      .send(config.serviceId, config.templateLead, params, config.publicKey)
+      .catch((error) => {
+        console.error('No se pudo enviar el lead por EmailJS, se mantiene FormSubmit como respaldo.', error);
+      });
+
+    return Promise.allSettled([formSubmitPromise, emailJsPromise]);
   }
 
   async function enviarMailVideollamadaAlUsuario(datos) {
