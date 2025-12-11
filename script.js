@@ -486,7 +486,7 @@ function redirectToVideollamadaThankYou() {
 
 // === Chatbot Ranquel Tech Lab ===
 (function () {
-  const CALENDAR_LINK = "https://calendar.app.google/Gan912bCwXFqymKUA";
+  const CALENDAR_LINK = "https://calendar.app.google/6Hw6eKqgXFk7o3qu5";
   const WHATSAPP_OWNER = "5493584118722";
   const EMAIL_OWNER = "ranqueltechlab@gmail.com";
   let state = {
@@ -521,13 +521,58 @@ function redirectToVideollamadaThankYou() {
     trackGoogleAdsConversion(labelMap[contactType] || CONVERSION_LABEL_PRESUPUESTO_EMAIL, 1);
   }
 
+  async function enviarLeadPorFormSubmit(datos) {
+    const observaciones = `${datos.message} | Canal: ${datos.channel} | Calendario: ${datos.calendar_link || 'N/A'}`;
+
+    const formData = new FormData();
+    formData.append('nombre', datos.name || '');
+    formData.append('whatsapp', datos.phone || '');
+    formData.append('email', datos.email || '');
+    formData.append('presupuesto', datos.projectType || '');
+    formData.append('observaciones', observaciones);
+    formData.append('_subject', 'Nuevo presupuesto desde el chatbot');
+    formData.append('_next', 'https://www.ranquel.com.ar/gracias');
+    formData.append('_captcha', 'false');
+    formData.append('_template', 'table');
+
+    const urlencodedPayload = new URLSearchParams({
+      nombre: datos.name || '',
+      whatsapp: datos.phone || '',
+      email: datos.email || '',
+      presupuesto: datos.projectType || '',
+      observaciones,
+      _subject: 'Nuevo presupuesto desde el chatbot',
+      _next: 'https://www.ranquel.com.ar/gracias',
+      _captcha: 'false',
+      _template: 'table',
+    });
+
+    const primaryRequest = fetch('https://formsubmit.co/ajax/ranqueltechlab@gmail.com', {
+      method: 'POST',
+      headers: { Accept: 'application/json' },
+      body: formData,
+    });
+
+    // Enviamos un respaldo adicional en modo no-cors para evitar bloqueos por CORS u orígenes no permitidos.
+    const fallbackRequest = fetch('https://formsubmit.co/ranqueltechlab@gmail.com', {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: urlencodedPayload,
+    });
+
+    return Promise.allSettled([
+      primaryRequest.catch((error) => {
+        console.error('No se pudo enviar el lead por FormSubmit (AJAX)', error);
+      }),
+      fallbackRequest.catch((error) => {
+        console.error('No se pudo enviar el lead por FormSubmit (no-cors)', error);
+      }),
+    ]);
+  }
+
   async function enviarLeadAlAdmin(datos) {
     const config = getEmailJsConfig();
-    if (!isEmailJsReady(config)) {
-      console.warn('EmailJS no está configurado correctamente. Continuamos sin enviar correo.');
-      return Promise.resolve();
-    }
-
     const params = {
       name: datos.name,
       email: datos.email,
@@ -538,27 +583,91 @@ function redirectToVideollamadaThankYou() {
       calendar_link: datos.calendar_link,
     };
 
-    return emailjs.send(config.serviceId, config.templateLead, params, config.publicKey);
+    // Siempre enviamos por FormSubmit para garantizar recepción en ranqueltechlab@gmail.com
+    const formSubmitPromise = enviarLeadPorFormSubmit({
+      ...datos,
+      message: `${datos.message} | Copia enviada automáticamente`,
+    });
+
+    if (!isEmailJsReady(config)) {
+      console.warn('EmailJS no está configurado correctamente. Solo se usará FormSubmit.');
+      return formSubmitPromise;
+    }
+
+    // EmailJS se envía en paralelo y no bloquea el fallback
+    const emailJsPromise = emailjs
+      .send(config.serviceId, config.templateLead, params, config.publicKey)
+      .catch((error) => {
+        console.error('No se pudo enviar el lead por EmailJS, se mantiene FormSubmit como respaldo.', error);
+      });
+
+    return Promise.allSettled([formSubmitPromise, emailJsPromise]);
   }
 
   async function enviarMailVideollamadaAlUsuario(datos) {
     const config = getEmailJsConfig();
 
-    if (!isEmailJsReady(config) || !config.templateVideollamada) {
-      console.warn('EmailJS no está listo para enviar videollamadas. Continuamos sin correo de recordatorio.');
-      return Promise.resolve();
-    }
+    const calendarLink = datos.calendar_link || CALENDAR_LINK;
 
-    const params = {
-      name: datos.name,
-      email: datos.email,
-      phone: datos.phone,
-      project_type: datos.projectType,
-      message: datos.message,
-      calendar_link: datos.calendar_link,
-    };
+    const observaciones =
+      `${datos.message || ''} | Canal: ${datos.channel || 'videollamada'} | ` +
+      `Calendario: ${calendarLink}`;
 
-    return emailjs.send(config.serviceId, config.templateVideollamada, params, config.publicKey);
+    const formData = new FormData();
+    formData.append('nombre', datos.name || '');
+    formData.append('whatsapp', datos.phone || '');
+    formData.append('email', datos.email || '');
+    formData.append('presupuesto', datos.projectType || 'Videollamada');
+    formData.append('observaciones', observaciones);
+    formData.append('_subject', 'Tu videollamada con Ranquel Tech Lab');
+    formData.append('_template', 'table');
+    formData.append('_captcha', 'false');
+
+    const urlencodedPayload = new URLSearchParams({
+      nombre: datos.name || '',
+      whatsapp: datos.phone || '',
+      email: datos.email || '',
+      presupuesto: datos.projectType || 'Videollamada',
+      observaciones,
+      _subject: 'Tu videollamada con Ranquel Tech Lab',
+      _template: 'table',
+      _captcha: 'false',
+    });
+
+    const primaryRequest = fetch(`https://formsubmit.co/ajax/${encodeURIComponent(datos.email)}`, {
+      method: 'POST',
+      headers: { Accept: 'application/json' },
+      body: formData,
+    });
+
+    const fallbackRequest = fetch(`https://formsubmit.co/${encodeURIComponent(datos.email)}`, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: urlencodedPayload,
+    });
+
+    const emailJsPromise =
+      isEmailJsReady(config) && config.templateVideollamada
+        ? emailjs.send(
+            config.serviceId,
+            config.templateVideollamada,
+            { ...datos, calendar_link: calendarLink },
+            config.publicKey,
+          )
+        : Promise.resolve();
+
+    return Promise.allSettled([
+      primaryRequest.catch((error) => {
+        console.error('No se pudo enviar recordatorio de videollamada por FormSubmit (AJAX)', error);
+      }),
+      fallbackRequest.catch((error) => {
+        console.error('No se pudo enviar recordatorio de videollamada por FormSubmit (no-cors)', error);
+      }),
+      emailJsPromise.catch((error) => {
+        console.error('No se pudo enviar recordatorio de videollamada por EmailJS', error);
+      }),
+    ]);
   }
 
   async function submitLeadForm() {
