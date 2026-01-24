@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="index, follow" />
+  <meta name="referrer" content="strict-origin-when-cross-origin" />
+
+  <meta http-equiv="Content-Security-Policy" content="
+    default-src 'self';
+    script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com;
+    connect-src 'self' https://www.google-analytics.com https://region1.google-analytics.com https://www.googletagmanager.com;
+    img-src 'self' data: https://www.google-analytics.com https://www.googletagmanager.com;
+    style-src 'self' 'unsafe-inline';
+    frame-src 'self' https://*.daily.co;
+    object-src 'none';
+    frame-ancestors 'self';
+    base-uri 'self';
+    upgrade-insecure-requests" />
+
+  <title>Videollamada | Ranquel Tech Lab</title>
+  <link rel="stylesheet" href="./styles.css" />
+
+  <!-- GA4 / Ads (si ya lo usás en el sitio, lo mantenemos) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-JY9JDYZB52"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-JY9JDYZB52');
+  </script>
+</head>
+<body>
+  <header id="header" class="backdrop">
+    <nav class="wrap" style="display:flex; justify-content:space-between; align-items:center;">
+      <a href="/" class="logo neon">Ranquel Tech Lab</a>
+      <a href="/" class="btn btn-ghost">Volver al inicio</a>
+    </nav>
+  </header>
+
+  <main class="wrap section-padding" style="padding-top: 96px;">
+    <div class="panel glow" style="padding: 20px;">
+      <h1 class="neon" style="margin:0; font-size: clamp(26px,4vw,40px); font-weight: 800;">Videollamada</h1>
+      <p style="margin-top: 8px; color: var(--text-muted);">
+        Si venís desde el turnero, tu email debería traer un link listo.
+        Si no, escribí la <strong>sala</strong> (o pegá la URL completa) y presioná <strong>Entrar</strong>.
+      </p>
+
+      <div class="booking-join" style="margin-top: 12px;">
+        <label class="small-label" for="roomInput">Sala / URL</label>
+        <div class="booking-join-row">
+          <input id="roomInput" class="input" type="text" placeholder="ej: ranquel-consulta o https://ranquel.daily.co/ranquel-consulta" />
+          <button id="joinBtn" class="btn btn-accent glow" type="button">Entrar</button>
+        </div>
+        <p class="help">Si lo dejás vacío, entra a <strong>ranquel-consulta</strong>.</p>
+      </div>
+
+      <div id="callContainer" class="daily-container" style="margin-top: 14px;">
+        <div class="daily-placeholder">
+          <strong>La videollamada se abre acá</strong>
+          <p>Presioná “Entrar” para cargar la sala dentro de la web.</p>
+        </div>
+      </div>
+
+      <div style="margin-top: 14px; display:flex; gap:10px; flex-wrap:wrap;">
+        <a class="btn btn-ghost" href="/?view=reservas">Ir al turnero + videollamada</a>
+        <a class="btn btn-ghost" target="_blank" rel="noopener noreferrer" href="https://calendar.app.google/LvSPMzEtUA8SKyRk6">Abrir agenda en nueva pestaña</a>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const DEFAULT_ROOM = 'ranquel-consulta';
+
+    function buildDailyUrl(value) {
+      const raw = (value || '').trim();
+      if (!raw) return `https://ranquel.daily.co/${encodeURIComponent(DEFAULT_ROOM)}`;
+      if (/^https?:\/\//i.test(raw)) return raw;
+      if (raw.includes('daily.co')) {
+        const cleaned = raw.replace(/^\/\//, '');
+        return cleaned.startsWith('http') ? cleaned : `https://${cleaned}`;
+      }
+      return `https://ranquel.daily.co/${encodeURIComponent(raw)}`;
+    }
+
+    function render(url) {
+      const el = document.getElementById('callContainer');
+      el.innerHTML = `
+        <iframe
+          title="Videollamada"
+          src="${url}"
+          allow="camera; microphone; fullscreen; speaker; display-capture"
+          style="width: 100%; height: 640px; border: 0; border-radius: 12px;"
+        ></iframe>
+      `;
+    }
+
+    const params = new URLSearchParams(window.location.search);
+    const room = params.get('room');
+    const input = document.getElementById('roomInput');
+    const btn = document.getElementById('joinBtn');
+
+    if (room && input) {
+      input.value = room;
+      render(buildDailyUrl(room));
+    }
+
+    btn.addEventListener('click', () => {
+      render(buildDailyUrl(input.value));
+    });
+
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        render(buildDailyUrl(input.value));
+      }
+    });
+  </script>
+</body>
+</html>
